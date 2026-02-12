@@ -1,0 +1,2864 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WoodWise - Tree & Wood Identification</title>
+    <link href="https://fonts.googleapis.com/css2?family=Crimson+Pro:wght@300;400;600;700&family=Epilogue:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --bark-dark: #2d1f1a;
+            --bark-medium: #4a3428;
+            --wood-light: #d4a574;
+            --wood-warm: #b8865f;
+            --leaf-green: #527a4c;
+            --sage: #8b9d83;
+            --cream: #f5f1e8;
+            --fire-orange: #d97642;
+            --shadow: rgba(45, 31, 26, 0.15);
+        }
+
+        body {
+            font-family: 'Epilogue', sans-serif;
+            background: linear-gradient(135deg, var(--cream) 0%, #e8dfd0 100%);
+            color: var(--bark-dark);
+            line-height: 1.6;
+            min-height: 100vh;
+            position: relative;
+            overflow-x: hidden;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: 
+                radial-gradient(circle at 20% 30%, rgba(82, 122, 76, 0.03) 0%, transparent 50%),
+                radial-gradient(circle at 80% 70%, rgba(217, 118, 66, 0.02) 0%, transparent 50%);
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 2rem;
+            position: relative;
+            z-index: 1;
+        }
+
+        header {
+            padding: 3rem 0 2rem;
+            text-align: center;
+            animation: fadeInDown 0.8s ease-out;
+        }
+
+        h1 {
+            font-family: 'Crimson Pro', serif;
+            font-size: 4.5rem;
+            font-weight: 700;
+            color: var(--bark-dark);
+            letter-spacing: -0.02em;
+            margin-bottom: 0.5rem;
+            text-shadow: 2px 2px 0 rgba(212, 165, 116, 0.3);
+        }
+
+        .tagline {
+            font-size: 1.1rem;
+            color: var(--bark-medium);
+            font-weight: 400;
+            letter-spacing: 0.05em;
+            text-transform: uppercase;
+        }
+
+        .nav-tabs {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            margin: 3rem 0;
+            flex-wrap: wrap;
+            animation: fadeIn 1s ease-out 0.3s backwards;
+        }
+
+        .tab-btn {
+            padding: 1rem 2rem;
+            background: white;
+            border: 2px solid var(--bark-dark);
+            color: var(--bark-dark);
+            font-family: 'Epilogue', sans-serif;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            border-radius: 0;
+            letter-spacing: 0.03em;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .tab-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: var(--bark-dark);
+            transition: left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            z-index: 0;
+        }
+
+        .tab-btn span {
+            position: relative;
+            z-index: 1;
+        }
+
+        .tab-btn:hover::before {
+            left: 0;
+        }
+
+        .tab-btn:hover span {
+            color: var(--cream);
+        }
+
+        .tab-btn.active {
+            background: var(--bark-dark);
+            color: var(--cream);
+        }
+
+        .tab-content {
+            display: none;
+            animation: fadeIn 0.5s ease-out;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .upload-section {
+            background: white;
+            border: 3px solid var(--bark-dark);
+            padding: 3rem;
+            margin: 2rem 0;
+            position: relative;
+            box-shadow: 8px 8px 0 var(--wood-light);
+            transition: all 0.3s ease;
+        }
+
+        .upload-section:hover {
+            transform: translate(-2px, -2px);
+            box-shadow: 12px 12px 0 var(--wood-light);
+        }
+
+        .upload-area {
+            border: 3px dashed var(--sage);
+            padding: 4rem 2rem;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background: linear-gradient(135deg, rgba(245, 241, 232, 0.5) 0%, rgba(232, 223, 208, 0.5) 100%);
+        }
+
+        .upload-area:hover {
+            border-color: var(--leaf-green);
+            background: linear-gradient(135deg, rgba(82, 122, 76, 0.05) 0%, rgba(139, 157, 131, 0.05) 100%);
+        }
+
+        .upload-area.dragover {
+            background: rgba(82, 122, 76, 0.1);
+            border-color: var(--leaf-green);
+        }
+
+        .upload-icon {
+            font-size: 4rem;
+            margin-bottom: 1rem;
+            color: var(--bark-medium);
+        }
+
+        input[type="file"] {
+            display: none;
+        }
+
+        .btn {
+            padding: 1rem 2.5rem;
+            background: var(--leaf-green);
+            color: white;
+            border: none;
+            font-family: 'Epilogue', sans-serif;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            letter-spacing: 0.05em;
+            text-transform: uppercase;
+            box-shadow: 4px 4px 0 var(--bark-dark);
+            position: relative;
+        }
+
+        .btn:hover {
+            background: var(--bark-dark);
+            transform: translate(-2px, -2px);
+            box-shadow: 6px 6px 0 var(--leaf-green);
+        }
+
+        .btn:active {
+            transform: translate(0, 0);
+            box-shadow: 2px 2px 0 var(--bark-dark);
+        }
+
+        .preview-container {
+            margin: 2rem 0;
+            text-align: center;
+        }
+
+        .preview-image {
+            max-width: 100%;
+            max-height: 500px;
+            border: 4px solid var(--bark-dark);
+            box-shadow: 0 10px 40px var(--shadow);
+        }
+
+        .results-card {
+            background: white;
+            border: 3px solid var(--bark-dark);
+            padding: 2.5rem;
+            margin: 2rem 0;
+            position: relative;
+            box-shadow: 6px 6px 0 var(--wood-warm);
+        }
+
+        .results-card h3 {
+            font-family: 'Crimson Pro', serif;
+            font-size: 2.5rem;
+            color: var(--bark-dark);
+            margin-bottom: 1.5rem;
+            border-bottom: 3px solid var(--wood-light);
+            padding-bottom: 1rem;
+        }
+
+        .property-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin: 2rem 0;
+        }
+
+        .property-item {
+            background: var(--cream);
+            padding: 1.5rem;
+            border-left: 4px solid var(--leaf-green);
+        }
+
+        .property-label {
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            color: var(--bark-medium);
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+        }
+
+        .property-value {
+            font-size: 1.2rem;
+            color: var(--bark-dark);
+            font-weight: 600;
+        }
+
+        .burning-section {
+            background: linear-gradient(135deg, #fff5eb 0%, #ffe8d6 100%);
+            border: 3px solid var(--fire-orange);
+            padding: 2rem;
+            margin: 2rem 0;
+            position: relative;
+        }
+
+        .burning-section::before {
+            content: '🔥';
+            position: absolute;
+            top: -1.5rem;
+            left: 2rem;
+            font-size: 3rem;
+            background: white;
+            padding: 0 1rem;
+        }
+
+        .burn-rating {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin: 1rem 0;
+        }
+
+        .rating-bar {
+            flex: 1;
+            height: 40px;
+            background: rgba(255, 255, 255, 0.5);
+            border: 2px solid var(--fire-orange);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .rating-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--fire-orange) 0%, #ff9966 100%);
+            transition: width 1s cubic-bezier(0.4, 0, 0.2, 1);
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            padding-right: 1rem;
+            color: white;
+            font-weight: 700;
+        }
+
+        .info-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            margin: 3rem 0;
+        }
+
+        .info-card {
+            background: white;
+            border: 3px solid var(--bark-dark);
+            padding: 2rem;
+            position: relative;
+            transition: all 0.3s ease;
+            box-shadow: 4px 4px 0 var(--sage);
+        }
+
+        .info-card:hover {
+            transform: translate(-2px, -2px);
+            box-shadow: 8px 8px 0 var(--sage);
+        }
+
+        .info-card h4 {
+            font-family: 'Crimson Pro', serif;
+            font-size: 1.8rem;
+            margin-bottom: 1rem;
+            color: var(--bark-dark);
+        }
+
+        .info-card ul {
+            list-style: none;
+            padding-left: 0;
+        }
+
+        .info-card li {
+            padding: 0.5rem 0;
+            padding-left: 1.5rem;
+            position: relative;
+        }
+
+        .info-card li::before {
+            content: '▸';
+            position: absolute;
+            left: 0;
+            color: var(--leaf-green);
+            font-weight: bold;
+        }
+
+        .professional-tools {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 2rem;
+            margin: 3rem 0;
+        }
+
+        .tool-card {
+            background: linear-gradient(135deg, white 0%, var(--cream) 100%);
+            border: 3px solid var(--bark-dark);
+            padding: 2.5rem;
+            box-shadow: 6px 6px 0 var(--wood-light);
+            transition: all 0.3s ease;
+        }
+
+        .tool-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 8px 12px 0 var(--wood-light);
+        }
+
+        .tool-icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+        }
+
+        .tool-card h3 {
+            font-family: 'Crimson Pro', serif;
+            font-size: 2rem;
+            margin-bottom: 1rem;
+            color: var(--bark-dark);
+        }
+
+        .database-section {
+            background: white;
+            border: 3px solid var(--bark-dark);
+            padding: 3rem;
+            margin: 3rem 0;
+            box-shadow: 8px 8px 0 var(--wood-warm);
+        }
+
+        .wood-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 1.5rem;
+            margin-top: 2rem;
+        }
+
+        .wood-card {
+            background: var(--cream);
+            border: 2px solid var(--bark-medium);
+            padding: 1.5rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .wood-card:hover {
+            background: white;
+            transform: translateY(-4px);
+            box-shadow: 0 8px 20px var(--shadow);
+            border-color: var(--leaf-green);
+        }
+
+        .wood-card h4 {
+            font-family: 'Crimson Pro', serif;
+            font-size: 1.5rem;
+            margin-bottom: 0.5rem;
+            color: var(--bark-dark);
+        }
+
+        .wood-category {
+            display: inline-block;
+            padding: 0.3rem 0.8rem;
+            background: var(--leaf-green);
+            color: white;
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-top: 0.5rem;
+        }
+
+        .search-box {
+            width: 100%;
+            padding: 1.2rem;
+            font-family: 'Epilogue', sans-serif;
+            font-size: 1.1rem;
+            border: 3px solid var(--bark-dark);
+            background: white;
+            margin-bottom: 2rem;
+        }
+
+        .search-box:focus {
+            outline: none;
+            border-color: var(--leaf-green);
+            box-shadow: 0 0 0 3px rgba(82, 122, 76, 0.2);
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes fadeInDown {
+            from {
+                opacity: 0;
+                transform: translateY(-30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .loading {
+            text-align: center;
+            padding: 3rem;
+            font-size: 1.2rem;
+            color: var(--bark-medium);
+        }
+
+        .loading::after {
+            content: '...';
+            animation: dots 1.5s infinite;
+        }
+
+        @keyframes dots {
+            0%, 20% { content: '.'; }
+            40% { content: '..'; }
+            60%, 100% { content: '...'; }
+        }
+
+        .feature-highlight {
+            background: linear-gradient(135deg, var(--leaf-green) 0%, var(--sage) 100%);
+            color: white;
+            padding: 3rem;
+            text-align: center;
+            margin: 3rem 0;
+            border: 3px solid var(--bark-dark);
+            box-shadow: 8px 8px 0 var(--wood-light);
+        }
+
+        .feature-highlight h2 {
+            font-family: 'Crimson Pro', serif;
+            font-size: 3rem;
+            margin-bottom: 1rem;
+        }
+
+        .country-selector {
+            background: white;
+            border: 3px solid var(--bark-dark);
+            padding: 2rem;
+            margin: 2rem 0;
+            box-shadow: 6px 6px 0 var(--wood-light);
+        }
+
+        .country-dropdown {
+            width: 100%;
+            padding: 1rem;
+            font-family: 'Epilogue', sans-serif;
+            font-size: 1.1rem;
+            border: 3px solid var(--bark-dark);
+            background: var(--cream);
+            cursor: pointer;
+            margin-bottom: 1.5rem;
+        }
+
+        .country-dropdown:focus {
+            outline: none;
+            border-color: var(--leaf-green);
+            box-shadow: 0 0 0 3px rgba(82, 122, 76, 0.2);
+        }
+
+        .credits-banner {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            background: linear-gradient(135deg, var(--leaf-green) 0%, var(--sage) 100%);
+            color: white;
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 1000;
+            box-shadow: 0 4px 12px var(--shadow);
+            border-bottom: 3px solid var(--bark-dark);
+        }
+
+        .credits-info {
+            font-weight: 600;
+            font-size: 1rem;
+        }
+
+        .upgrade-btn {
+            padding: 0.7rem 1.5rem;
+            background: var(--fire-orange);
+            color: white;
+            border: 2px solid white;
+            font-family: 'Epilogue', sans-serif;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            font-size: 0.9rem;
+        }
+
+        .upgrade-btn:hover {
+            background: white;
+            color: var(--fire-orange);
+            border-color: var(--fire-orange);
+            transform: scale(1.05);
+        }
+
+        .pricing-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(45, 31, 26, 0.9);
+            z-index: 2000;
+            align-items: center;
+            justify-content: center;
+            animation: fadeIn 0.3s ease-out;
+        }
+
+        .pricing-modal.active {
+            display: flex;
+        }
+
+        .pricing-container {
+            background: var(--cream);
+            border: 4px solid var(--bark-dark);
+            padding: 3rem;
+            max-width: 1200px;
+            max-height: 90vh;
+            overflow-y: auto;
+            position: relative;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+        }
+
+        .close-modal {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            font-size: 2rem;
+            cursor: pointer;
+            color: var(--bark-dark);
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 2px solid var(--bark-dark);
+            background: white;
+            transition: all 0.3s ease;
+        }
+
+        .close-modal:hover {
+            background: var(--bark-dark);
+            color: white;
+            transform: rotate(90deg);
+        }
+
+        .pricing-plans {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 2rem;
+            margin-top: 2rem;
+        }
+
+        .plan-card {
+            background: white;
+            border: 3px solid var(--bark-dark);
+            padding: 2.5rem 2rem;
+            position: relative;
+            transition: all 0.3s ease;
+        }
+
+        .plan-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 8px 12px 0 var(--wood-light);
+        }
+
+        .plan-card.featured {
+            border-color: var(--fire-orange);
+            box-shadow: 6px 6px 0 var(--fire-orange);
+        }
+
+        .plan-badge {
+            position: absolute;
+            top: -15px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: var(--fire-orange);
+            color: white;
+            padding: 0.5rem 1.5rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            font-size: 0.85rem;
+            letter-spacing: 0.1em;
+        }
+
+        .plan-name {
+            font-family: 'Crimson Pro', serif;
+            font-size: 2rem;
+            margin-bottom: 1rem;
+            color: var(--bark-dark);
+        }
+
+        .plan-price {
+            font-size: 3rem;
+            font-weight: 700;
+            color: var(--leaf-green);
+            margin-bottom: 0.5rem;
+        }
+
+        .plan-price span {
+            font-size: 1.2rem;
+            color: var(--bark-medium);
+        }
+
+        .plan-features {
+            list-style: none;
+            padding: 0;
+            margin: 2rem 0;
+        }
+
+        .plan-features li {
+            padding: 0.7rem 0;
+            border-bottom: 1px solid var(--cream);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .plan-features li::before {
+            content: '✓';
+            color: var(--leaf-green);
+            font-weight: bold;
+            font-size: 1.2rem;
+        }
+
+        .select-plan-btn {
+            width: 100%;
+            padding: 1rem;
+            background: var(--leaf-green);
+            color: white;
+            border: none;
+            font-family: 'Epilogue', sans-serif;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-top: 1rem;
+        }
+
+        .select-plan-btn:hover {
+            background: var(--bark-dark);
+            transform: translateY(-2px);
+        }
+
+        .plan-card.featured .select-plan-btn {
+            background: var(--fire-orange);
+        }
+
+        .plan-card.featured .select-plan-btn:hover {
+            background: var(--bark-dark);
+        }
+
+        /* Stripe Checkout Modal */
+        .stripe-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(45, 31, 26, 0.95);
+            z-index: 3000;
+            align-items: center;
+            justify-content: center;
+            animation: fadeIn 0.3s ease-out;
+        }
+
+        .stripe-modal.active {
+            display: flex;
+        }
+
+        .stripe-checkout {
+            background: white;
+            border-radius: 8px;
+            max-width: 500px;
+            width: 90%;
+            max-height: 90vh;
+            overflow-y: auto;
+            box-shadow: 0 30px 80px rgba(0, 0, 0, 0.4);
+            animation: slideUp 0.4s ease-out;
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(50px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .stripe-header {
+            background: linear-gradient(135deg, #635BFF 0%, #4F46E5 100%);
+            color: white;
+            padding: 2rem;
+            border-radius: 8px 8px 0 0;
+            position: relative;
+        }
+
+        .stripe-close {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.2);
+            border: none;
+            color: white;
+            font-size: 1.5rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+        }
+
+        .stripe-close:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: rotate(90deg);
+        }
+
+        .stripe-logo {
+            font-size: 1.8rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .stripe-body {
+            padding: 2rem;
+        }
+
+        .order-summary {
+            background: var(--cream);
+            padding: 1.5rem;
+            border-radius: 4px;
+            margin-bottom: 2rem;
+            border: 1px solid #e0e0e0;
+        }
+
+        .order-item {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 1rem;
+        }
+
+        .order-item:last-child {
+            margin-bottom: 0;
+            padding-top: 1rem;
+            border-top: 2px solid var(--bark-dark);
+            font-weight: 700;
+            font-size: 1.2rem;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            color: var(--bark-dark);
+            font-size: 0.9rem;
+        }
+
+        .stripe-input {
+            width: 100%;
+            padding: 0.8rem;
+            border: 1px solid #e0e0e0;
+            border-radius: 4px;
+            font-family: 'Epilogue', sans-serif;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+        }
+
+        .stripe-input:focus {
+            outline: none;
+            border-color: #635BFF;
+            box-shadow: 0 0 0 3px rgba(99, 91, 255, 0.1);
+        }
+
+        .card-element {
+            padding: 1rem;
+            border: 1px solid #e0e0e0;
+            border-radius: 4px;
+            background: white;
+            transition: all 0.3s ease;
+        }
+
+        .card-element:hover {
+            border-color: #635BFF;
+        }
+
+        .card-element.focused {
+            border-color: #635BFF;
+            box-shadow: 0 0 0 3px rgba(99, 91, 255, 0.1);
+        }
+
+        .card-icons {
+            display: flex;
+            gap: 0.5rem;
+            margin-top: 0.5rem;
+            font-size: 0.85rem;
+            color: #888;
+        }
+
+        .stripe-pay-btn {
+            width: 100%;
+            padding: 1rem;
+            background: linear-gradient(135deg, #635BFF 0%, #4F46E5 100%);
+            color: white;
+            border: none;
+            border-radius: 4px;
+            font-family: 'Epilogue', sans-serif;
+            font-size: 1rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-top: 1rem;
+        }
+
+        .stripe-pay-btn:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(99, 91, 255, 0.3);
+        }
+
+        .stripe-pay-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .secure-badge {
+            text-align: center;
+            margin-top: 1rem;
+            font-size: 0.85rem;
+            color: #888;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+        }
+
+        .processing-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(255, 255, 255, 0.95);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+            border-radius: 8px;
+            z-index: 10;
+        }
+
+        .processing-overlay.active {
+            display: flex;
+        }
+
+        .spinner {
+            width: 50px;
+            height: 50px;
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #635BFF;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .success-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(45, 31, 26, 0.95);
+            z-index: 4000;
+            align-items: center;
+            justify-content: center;
+            animation: fadeIn 0.3s ease-out;
+        }
+
+        .success-modal.active {
+            display: flex;
+        }
+
+        .success-content {
+            background: white;
+            border: 4px solid var(--leaf-green);
+            padding: 3rem;
+            max-width: 500px;
+            text-align: center;
+            box-shadow: 0 30px 80px rgba(0, 0, 0, 0.4);
+        }
+
+        .success-icon {
+            font-size: 5rem;
+            margin-bottom: 1rem;
+            animation: scaleIn 0.5s ease-out;
+        }
+
+        @keyframes scaleIn {
+            0% {
+                transform: scale(0);
+                opacity: 0;
+            }
+            50% {
+                transform: scale(1.2);
+            }
+            100% {
+                transform: scale(1);
+                opacity: 1;
+            }
+        }
+
+        .success-title {
+            font-family: 'Crimson Pro', serif;
+            font-size: 2.5rem;
+            color: var(--bark-dark);
+            margin-bottom: 1rem;
+        }
+
+        @media (max-width: 768px) {
+            h1 {
+                font-size: 3rem;
+            }
+
+            .credits-banner {
+                flex-direction: column;
+                gap: 1rem;
+                text-align: center;
+            }
+
+            .pricing-container {
+                padding: 2rem 1rem;
+                margin: 1rem;
+            }
+
+            .nav-tabs {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .upload-section, .results-card, .database-section {
+                padding: 1.5rem;
+            }
+
+            .property-grid, .info-cards, .professional-tools, .wood-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Credits Banner -->
+    <div class="credits-banner">
+        <div class="credits-info">
+            <span id="creditsDisplay">🌲 Free Searches Remaining: 3 / 3</span>
+        </div>
+        <button class="upgrade-btn" id="upgradeBtnTop">Upgrade to Pro</button>
+    </div>
+
+    <!-- Pricing Modal -->
+    <div class="pricing-modal" id="pricingModal">
+        <div class="pricing-container">
+            <div class="close-modal" id="closeModal">×</div>
+            <h2 style="font-family: 'Crimson Pro', serif; font-size: 3rem; text-align: center; margin-bottom: 1rem;">
+                Choose Your Plan
+            </h2>
+            <p style="text-align: center; color: var(--bark-medium); font-size: 1.1rem; margin-bottom: 2rem;">
+                Unlock the full power of WoodWise
+            </p>
+
+            <div class="pricing-plans">
+                <div class="plan-card">
+                    <h3 class="plan-name">Free</h3>
+                    <div class="plan-price">$0<span>/month</span></div>
+                    <p style="color: var(--bark-medium); margin-bottom: 1rem;">Perfect for casual users</p>
+                    <ul class="plan-features">
+                        <li>3 searches per month</li>
+                        <li>Basic tree identification</li>
+                        <li>Basic wood identification</li>
+                        <li>Burning suitability ratings</li>
+                        <li>Access to wood database</li>
+                    </ul>
+                    <button class="select-plan-btn" disabled style="opacity: 0.5; cursor: not-allowed;">Current Plan</button>
+                </div>
+
+                <div class="plan-card featured">
+                    <div class="plan-badge">Most Popular</div>
+                    <h3 class="plan-name">Pro</h3>
+                    <div class="plan-price">$9.99<span>/month</span></div>
+                    <p style="color: var(--bark-medium); margin-bottom: 1rem;">For enthusiasts and professionals</p>
+                    <ul class="plan-features">
+                        <li>Unlimited searches</li>
+                        <li>Advanced AI identification</li>
+                        <li>Detailed burn time calculations</li>
+                        <li>Professional carpenter tools</li>
+                        <li>Woodworking guides</li>
+                        <li>Save identification history</li>
+                        <li>Export reports (PDF)</li>
+                        <li>Priority support</li>
+                    </ul>
+                    <button class="select-plan-btn" onclick="selectPlan('pro')">Select Pro</button>
+                </div>
+
+                <div class="plan-card">
+                    <h3 class="plan-name">Professional</h3>
+                    <div class="plan-price">$29.99<span>/month</span></div>
+                    <p style="color: var(--bark-medium); margin-bottom: 1rem;">For businesses and teams</p>
+                    <ul class="plan-features">
+                        <li>Everything in Pro</li>
+                        <li>Bulk identification (100+ at once)</li>
+                        <li>Team collaboration features</li>
+                        <li>Custom wood database entries</li>
+                        <li>API access for integration</li>
+                        <li>Advanced analytics dashboard</li>
+                        <li>White-label options</li>
+                        <li>Dedicated account manager</li>
+                    </ul>
+                    <button class="select-plan-btn" onclick="selectPlan('professional')">Select Professional</button>
+                </div>
+            </div>
+
+            <div style="text-align: center; margin-top: 3rem; padding-top: 2rem; border-top: 2px solid var(--bark-dark);">
+                <h4 style="font-family: 'Crimson Pro', serif; font-size: 1.5rem; margin-bottom: 1rem;">
+                    Or buy credits as you go
+                </h4>
+                <div style="display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap; margin-top: 1.5rem;">
+                    <div style="background: white; border: 2px solid var(--bark-dark); padding: 1.5rem; min-width: 200px;">
+                        <div style="font-size: 1.5rem; font-weight: 700; color: var(--leaf-green);">10 Credits</div>
+                        <div style="font-size: 2rem; font-weight: 700; margin: 0.5rem 0;">$4.99</div>
+                        <div style="color: var(--bark-medium); font-size: 0.9rem;">$0.50 per search</div>
+                        <button class="btn" style="margin-top: 1rem; padding: 0.7rem 1.5rem; width: 100%;" onclick="buyCredits(10)">Buy Now</button>
+                    </div>
+                    <div style="background: white; border: 2px solid var(--bark-dark); padding: 1.5rem; min-width: 200px; position: relative;">
+                        <div style="position: absolute; top: -12px; left: 50%; transform: translateX(-50%); background: var(--fire-orange); color: white; padding: 0.3rem 1rem; font-size: 0.75rem; font-weight: 700;">BEST VALUE</div>
+                        <div style="font-size: 1.5rem; font-weight: 700; color: var(--leaf-green);">50 Credits</div>
+                        <div style="font-size: 2rem; font-weight: 700; margin: 0.5rem 0;">$19.99</div>
+                        <div style="color: var(--bark-medium); font-size: 0.9rem;">$0.40 per search</div>
+                        <button class="btn" style="margin-top: 1rem; padding: 0.7rem 1.5rem; width: 100%; background: var(--fire-orange);" onclick="buyCredits(50)">Buy Now</button>
+                    </div>
+                    <div style="background: white; border: 2px solid var(--bark-dark); padding: 1.5rem; min-width: 200px;">
+                        <div style="font-size: 1.5rem; font-weight: 700; color: var(--leaf-green);">100 Credits</div>
+                        <div style="font-size: 2rem; font-weight: 700; margin: 0.5rem 0;">$34.99</div>
+                        <div style="color: var(--bark-medium); font-size: 0.9rem;">$0.35 per search</div>
+                        <button class="btn" style="margin-top: 1rem; padding: 0.7rem 1.5rem; width: 100%;" onclick="buyCredits(100)">Buy Now</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Stripe Checkout Modal -->
+    <div class="stripe-modal" id="stripeModal">
+        <div class="stripe-checkout">
+            <div class="processing-overlay" id="processingOverlay">
+                <div class="spinner"></div>
+                <p style="margin-top: 1rem; font-weight: 600; color: var(--bark-dark);">Processing payment...</p>
+            </div>
+
+            <div class="stripe-header">
+                <button class="stripe-close" id="stripeClose">×</button>
+                <div class="stripe-logo">
+                    <svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <rect width="32" height="32" rx="4" fill="white"/>
+                        <path d="M16 8C12.686 8 10 10.686 10 14C10 17.314 12.686 20 16 20C19.314 20 22 17.314 22 14C22 10.686 19.314 8 16 8ZM16 18C13.791 18 12 16.209 12 14C12 11.791 13.791 10 16 10C18.209 10 20 11.791 20 14C20 16.209 18.209 18 16 18Z" fill="#635BFF"/>
+                    </svg>
+                    <span>Secure Checkout</span>
+                </div>
+                <p style="opacity: 0.9; margin: 0;">Powered by Stripe</p>
+            </div>
+
+            <div class="stripe-body">
+                <div class="order-summary">
+                    <h3 style="font-family: 'Crimson Pro', serif; font-size: 1.3rem; margin-bottom: 1rem;">Order Summary</h3>
+                    <div class="order-item">
+                        <span id="orderItemName">WoodWise Pro Plan</span>
+                        <span id="orderItemPrice">$9.99</span>
+                    </div>
+                    <div class="order-item">
+                        <span style="font-weight: 700;">Total</span>
+                        <span id="orderTotal" style="font-weight: 700;">$9.99</span>
+                    </div>
+                </div>
+
+                <form id="stripeForm">
+                    <div class="form-group">
+                        <label class="form-label" for="email">Email</label>
+                        <input type="email" id="email" class="stripe-input" placeholder="you@example.com" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label" for="name">Cardholder Name</label>
+                        <input type="text" id="name" class="stripe-input" placeholder="John Doe" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Card Information</label>
+                        <div class="card-element" id="cardElement">
+                            <input type="text" class="stripe-input" placeholder="1234 5678 9012 3456" maxlength="19" id="cardNumber" style="border: none; padding: 0;" required>
+                        </div>
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-top: 0.5rem;">
+                            <input type="text" class="stripe-input" placeholder="MM / YY" maxlength="7" id="cardExpiry" required>
+                            <input type="text" class="stripe-input" placeholder="CVC" maxlength="4" id="cardCvc" required>
+                        </div>
+                        <div class="card-icons">
+                            💳 Visa • Mastercard • Amex • Discover
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label" for="country">Country</label>
+                        <select id="country" class="stripe-input" required>
+                            <option value="">Select country</option>
+                            <option value="US">United States</option>
+                            <option value="GR">Greece</option>
+                            <option value="UK">United Kingdom</option>
+                            <option value="CA">Canada</option>
+                            <option value="FR">France</option>
+                            <option value="DE">Germany</option>
+                            <option value="IT">Italy</option>
+                            <option value="ES">Spain</option>
+                            <option value="AU">Australia</option>
+                            <option value="JP">Japan</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label" for="postal">ZIP / Postal Code</label>
+                        <input type="text" id="postal" class="stripe-input" placeholder="12345" required>
+                    </div>
+
+                    <button type="submit" class="stripe-pay-btn" id="stripePayBtn">
+                        Pay <span id="payAmount">$9.99</span>
+                    </button>
+
+                    <div class="secure-badge">
+                        🔒 Secured by Stripe • Your payment info is encrypted
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Success Modal -->
+    <div class="success-modal" id="successModal">
+        <div class="success-content">
+            <div class="success-icon">✅</div>
+            <h2 class="success-title">Payment Successful!</h2>
+            <p style="font-size: 1.1rem; color: var(--bark-medium); margin-bottom: 2rem;">
+                Welcome to <strong id="successPlanName">WoodWise Pro</strong>!
+            </p>
+            <div style="background: var(--cream); padding: 1.5rem; border: 2px solid var(--leaf-green); margin-bottom: 2rem;">
+                <p style="font-weight: 600; margin-bottom: 0.5rem;">Your account has been upgraded</p>
+                <p id="successMessage" style="color: var(--bark-medium);">You now have unlimited searches!</p>
+            </div>
+            <button class="btn" onclick="closeSuccessModal()" style="width: 100%;">Start Exploring</button>
+        </div>
+    </div>
+
+    <div class="container" style="margin-top: 5rem;">
+        <header>
+            <h1>WoodWise</h1>
+            <p class="tagline">Your Complete Wood & Tree Identification Guide</p>
+        </header>
+
+        <nav class="nav-tabs">
+            <button class="tab-btn active" data-tab="identify"><span>🌲 Identify Tree</span></button>
+            <button class="tab-btn" data-tab="wood"><span>🪵 Identify Wood</span></button>
+            <button class="tab-btn" data-tab="burning"><span>🔥 Burning Analysis</span></button>
+            <button class="tab-btn" data-tab="carpenter"><span>🔨 Carpenter's Corner</span></button>
+            <button class="tab-btn" data-tab="woodworker"><span>🪚 Woodworker's Hub</span></button>
+            <button class="tab-btn" data-tab="database"><span>📚 Wood Database</span></button>
+            <button class="tab-btn" data-tab="foodpairing"><span>🍖 Food Pairing</span></button>
+            <button class="tab-btn" data-tab="moisture"><span>💧 Moisture Check</span></button>
+            <button class="tab-btn" data-tab="community"><span>👥 Community</span></button>
+        </nav>
+
+        <!-- Tree Identification Tab -->
+        <div class="tab-content active" id="identify">
+            <div class="upload-section">
+                <h2 style="font-family: 'Crimson Pro', serif; font-size: 2.5rem; margin-bottom: 2rem;">Identify a Living Tree</h2>
+                <div class="upload-area" id="treeUpload">
+                    <div class="upload-icon">🌳</div>
+                    <h3 style="font-size: 1.5rem; margin-bottom: 0.5rem;">Upload Tree Photo</h3>
+                    <p style="color: var(--bark-medium);">Take a photo of leaves, bark, or the entire tree</p>
+                    <p style="color: var(--sage); font-size: 0.9rem; margin-top: 1rem;">Drag & drop or click to select</p>
+                    <input type="file" id="treeFile" accept="image/*">
+                </div>
+                <div id="treePreview" class="preview-container"></div>
+                <div style="text-align: center; margin-top: 2rem;">
+                    <button class="btn" id="identifyTreeBtn" style="display: none;">Identify Tree</button>
+                </div>
+            </div>
+
+            <div id="treeResults" style="display: none;">
+                <div class="results-card">
+                    <h3>🌲 Oak Tree (Quercus robur)</h3>
+                    <p style="font-size: 1.1rem; margin-bottom: 2rem; color: var(--bark-medium);">
+                        Common English Oak - A majestic deciduous hardwood native to Europe
+                    </p>
+
+                    <div class="property-grid">
+                        <div class="property-item">
+                            <div class="property-label">Scientific Name</div>
+                            <div class="property-value">Quercus robur</div>
+                        </div>
+                        <div class="property-item">
+                            <div class="property-label">Family</div>
+                            <div class="property-value">Fagaceae</div>
+                        </div>
+                        <div class="property-item">
+                            <div class="property-label">Native Region</div>
+                            <div class="property-value">Europe, Western Asia</div>
+                        </div>
+                        <div class="property-item">
+                            <div class="property-label">Growth Rate</div>
+                            <div class="property-value">Slow to Medium</div>
+                        </div>
+                        <div class="property-item">
+                            <div class="property-label">Mature Height</div>
+                            <div class="property-value">20-40 meters</div>
+                        </div>
+                        <div class="property-item">
+                            <div class="property-label">Lifespan</div>
+                            <div class="property-value">500-1000+ years</div>
+                        </div>
+                    </div>
+
+                    <div class="info-cards">
+                        <div class="info-card">
+                            <h4>Tree Characteristics</h4>
+                            <ul>
+                                <li>Lobed leaves with rounded edges</li>
+                                <li>Deeply fissured gray-brown bark</li>
+                                <li>Produces acorns in autumn</li>
+                                <li>Broad, spreading crown</li>
+                                <li>Deciduous - loses leaves in winter</li>
+                            </ul>
+                        </div>
+
+                        <div class="info-card">
+                            <h4>Wood Properties</h4>
+                            <ul>
+                                <li>Hardwood - very strong and durable</li>
+                                <li>Golden to medium brown color</li>
+                                <li>Distinctive grain pattern</li>
+                                <li>Excellent natural durability</li>
+                                <li>High tannin content</li>
+                            </ul>
+                        </div>
+
+                        <div class="info-card">
+                            <h4>Common Uses</h4>
+                            <ul>
+                                <li>Furniture and cabinetry</li>
+                                <li>Flooring and construction</li>
+                                <li>Shipbuilding and boats</li>
+                                <li>Barrels for wine and whiskey</li>
+                                <li>Outdoor structures and fencing</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Wood Identification Tab -->
+        <div class="tab-content" id="wood">
+            <div class="upload-section">
+                <h2 style="font-family: 'Crimson Pro', serif; font-size: 2.5rem; margin-bottom: 2rem;">Identify Cut Wood or Lumber</h2>
+                <div class="upload-area" id="woodUpload">
+                    <div class="upload-icon">🪵</div>
+                    <h3 style="font-size: 1.5rem; margin-bottom: 0.5rem;">Upload Wood Photo</h3>
+                    <p style="color: var(--bark-medium);">Take a clear photo showing grain pattern and color</p>
+                    <p style="color: var(--sage); font-size: 0.9rem; margin-top: 1rem;">Drag & drop or click to select</p>
+                    <input type="file" id="woodFile" accept="image/*">
+                </div>
+                <div id="woodPreview" class="preview-container"></div>
+                <div style="text-align: center; margin-top: 2rem;">
+                    <button class="btn" id="identifyWoodBtn" style="display: none;">Identify Wood</button>
+                </div>
+            </div>
+
+            <div id="woodResults" style="display: none;">
+                <div class="results-card">
+                    <h3>🪵 White Oak Lumber</h3>
+                    <p style="font-size: 1.1rem; margin-bottom: 2rem; color: var(--bark-medium);">
+                        Premium hardwood lumber with excellent strength and water resistance
+                    </p>
+
+                    <div class="property-grid">
+                        <div class="property-item">
+                            <div class="property-label">Wood Type</div>
+                            <div class="property-value">White Oak</div>
+                        </div>
+                        <div class="property-item">
+                            <div class="property-label">Hardness (Janka)</div>
+                            <div class="property-value">1,360 lbf</div>
+                        </div>
+                        <div class="property-item">
+                            <div class="property-label">Density</div>
+                            <div class="property-value">770 kg/m³</div>
+                        </div>
+                        <div class="property-item">
+                            <div class="property-label">Grain Pattern</div>
+                            <div class="property-value">Medium to Coarse</div>
+                        </div>
+                        <div class="property-item">
+                            <div class="property-label">Workability</div>
+                            <div class="property-value">Moderate</div>
+                        </div>
+                        <div class="property-item">
+                            <div class="property-label">Durability</div>
+                            <div class="property-value">Excellent</div>
+                        </div>
+                    </div>
+
+                    <div class="info-cards">
+                        <div class="info-card">
+                            <h4>Best Uses</h4>
+                            <ul>
+                                <li>Fine furniture and cabinetry</li>
+                                <li>Hardwood flooring</li>
+                                <li>Interior millwork and trim</li>
+                                <li>Boat building</li>
+                                <li>Wine and whiskey barrels</li>
+                                <li>Outdoor furniture</li>
+                            </ul>
+                        </div>
+
+                        <div class="info-card">
+                            <h4>Working Properties</h4>
+                            <ul>
+                                <li>Machines well with sharp tools</li>
+                                <li>Glues and finishes excellently</li>
+                                <li>Can be steam bent</li>
+                                <li>Pre-drilling recommended for nails</li>
+                                <li>Takes stain very well</li>
+                                <li>Minimal movement after drying</li>
+                            </ul>
+                        </div>
+
+                        <div class="info-card">
+                            <h4>Special Features</h4>
+                            <ul>
+                                <li>Naturally water-resistant</li>
+                                <li>Closed cellular structure</li>
+                                <li>Beautiful ray fleck pattern</li>
+                                <li>Resists rot and insects</li>
+                                <li>Long-lasting outdoors</li>
+                                <li>Premium appearance</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Burning Analysis Tab -->
+        <div class="tab-content" id="burning">
+            <div class="upload-section">
+                <h2 style="font-family: 'Crimson Pro', serif; font-size: 2.5rem; margin-bottom: 2rem;">Analyze Wood for Burning</h2>
+                <div class="upload-area" id="burnUpload">
+                    <div class="upload-icon">🔥</div>
+                    <h3 style="font-size: 1.5rem; margin-bottom: 0.5rem;">Upload Firewood Photo</h3>
+                    <p style="color: var(--bark-medium);">Include the size and any split ends for accurate analysis</p>
+                    <p style="color: var(--sage); font-size: 0.9rem; margin-top: 1rem;">Drag & drop or click to select</p>
+                    <input type="file" id="burnFile" accept="image/*">
+                </div>
+                <div id="burnPreview" class="preview-container"></div>
+                <div style="text-align: center; margin-top: 2rem;">
+                    <button class="btn" id="analyzeBurnBtn" style="display: none;">Analyze for Burning</button>
+                </div>
+            </div>
+
+            <div id="burnResults" style="display: none;">
+                <div class="results-card">
+                    <h3>🔥 Oak Firewood Analysis</h3>
+                    
+                    <!-- WoodWise Score -->
+                    <div style="background: linear-gradient(135deg, var(--leaf-green) 0%, var(--sage) 100%); color: white; padding: 2rem; margin-bottom: 2rem; border: 3px solid var(--bark-dark);">
+                        <h4 style="font-size: 2rem; margin-bottom: 1rem; color: white;">WoodWise Score™</h4>
+                        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 1rem;">
+                            <div style="text-align: center;">
+                                <div style="font-size: 3rem; font-weight: 700;">95</div>
+                                <div style="font-size: 0.9rem; opacity: 0.9;">🔥 Fireplace</div>
+                            </div>
+                            <div style="text-align: center;">
+                                <div style="font-size: 3rem; font-weight: 700;">88</div>
+                                <div style="font-size: 0.9rem; opacity: 0.9;">🍖 BBQ/Smoking</div>
+                            </div>
+                            <div style="text-align: center;">
+                                <div style="font-size: 3rem; font-weight: 700;">90</div>
+                                <div style="font-size: 0.9rem; opacity: 0.9;">💰 Value</div>
+                            </div>
+                            <div style="text-align: center;">
+                                <div style="font-size: 3rem; font-weight: 700;">92</div>
+                                <div style="font-size: 0.9rem; opacity: 0.9;">🌱 Sustainability</div>
+                            </div>
+                        </div>
+                        <div style="text-align: center; margin-top: 1.5rem; font-size: 2.5rem; font-weight: 700; padding-top: 1rem; border-top: 2px solid rgba(255,255,255,0.3);">
+                            Overall: 91/100
+                        </div>
+                    </div>
+                    
+                    <div class="burning-section">
+                        <h4 style="font-size: 1.8rem; margin-bottom: 1.5rem; color: var(--bark-dark);">Burning Suitability</h4>
+                        
+                        <div style="margin-bottom: 2rem;">
+                            <h5 style="margin-bottom: 0.5rem;">Fireplace Rating</h5>
+                            <div class="burn-rating">
+                                <div class="rating-bar">
+                                    <div class="rating-fill" style="width: 95%;">Excellent 95%</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div style="margin-bottom: 2rem;">
+                            <h5 style="margin-bottom: 0.5rem;">BBQ/Smoking Rating</h5>
+                            <div class="burn-rating">
+                                <div class="rating-bar">
+                                    <div class="rating-fill" style="width: 90%;">Excellent 90%</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div style="background: white; padding: 1.5rem; border: 2px solid var(--fire-orange); margin-top: 2rem;">
+                            <h5 style="font-size: 1.3rem; margin-bottom: 1rem;">⚠️ Best Practices</h5>
+                            <p><strong>Starting Fire:</strong> NOT recommended as kindling - Oak is a slow-starting hardwood</p>
+                            <p style="margin-top: 1rem;"><strong>Use After:</strong> Fire is well-established with softwood or kindling</p>
+                            <p style="margin-top: 1rem;"><strong>Burn Characteristic:</strong> Long, slow, steady burn with excellent heat output</p>
+                        </div>
+                    </div>
+
+                    <div class="property-grid">
+                        <div class="property-item">
+                            <div class="property-label">Wood Type</div>
+                            <div class="property-value">White Oak</div>
+                        </div>
+                        <div class="property-item">
+                            <div class="property-label">Estimated Piece Size</div>
+                            <div class="property-value">40cm × 12cm × 10cm</div>
+                        </div>
+                        <div class="property-item">
+                            <div class="property-label">Estimated Burn Time</div>
+                            <div class="property-value">2-3 hours</div>
+                        </div>
+                        <div class="property-item">
+                            <div class="property-label">Heat Output (BTU)</div>
+                            <div class="property-value">24.6 Million/cord</div>
+                        </div>
+                        <div class="property-item">
+                            <div class="property-label">Moisture Content</div>
+                            <div class="property-value">~15-20% (seasoned)</div>
+                        </div>
+                        <div class="property-item">
+                            <div class="property-label">Smoke Level</div>
+                            <div class="property-value">Low</div>
+                        </div>
+                    </div>
+
+                    <div class="info-cards">
+                        <div class="info-card">
+                            <h4>Fireplace Performance</h4>
+                            <ul>
+                                <li>Long-lasting, steady heat</li>
+                                <li>Minimal sparking and popping</li>
+                                <li>Low smoke when properly seasoned</li>
+                                <li>Creates beautiful coals</li>
+                                <li>Excellent for overnight burns</li>
+                                <li>Clean burning</li>
+                            </ul>
+                        </div>
+
+                        <div class="info-card">
+                            <h4>BBQ & Smoking</h4>
+                            <ul>
+                                <li>Mild, sweet smoke flavor</li>
+                                <li>Perfect for long smoking sessions</li>
+                                <li>Great for beef, pork, lamb</li>
+                                <li>Produces consistent temperature</li>
+                                <li>Doesn't overpower food</li>
+                                <li>Professional pitmasters' choice</li>
+                            </ul>
+                        </div>
+
+                        <div class="info-card">
+                            <h4>Recommendations</h4>
+                            <ul>
+                                <li>Season for 1-2 years before use</li>
+                                <li>Store in dry, covered location</li>
+                                <li>Split to 10-15cm for best results</li>
+                                <li>Mix with faster-burning woods</li>
+                                <li>Check moisture with meter</li>
+                                <li>Excellent value for money</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div style="background: var(--leaf-green); color: white; padding: 2rem; margin-top: 2rem; border: 3px solid var(--bark-dark);">
+                        <h4 style="font-size: 1.8rem; margin-bottom: 1rem;">💡 Pro Tip</h4>
+                        <p style="font-size: 1.1rem; line-height: 1.8;">
+                            For this piece of oak (approximately 40cm long), expect 2-3 hours of quality heat in a fireplace. Start your fire with softwood kindling, then add this oak once flames are established. The dense cellular structure means it ignites slowly but burns long and hot - perfect for those cold winter evenings!
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Carpenter's Corner Tab -->
+        <div class="tab-content" id="carpenter">
+            <div class="feature-highlight">
+                <h2>🔨 Carpenter's Corner</h2>
+                <p style="font-size: 1.2rem;">Professional tools and resources for construction carpentry</p>
+            </div>
+
+            <div class="professional-tools">
+                <div class="tool-card">
+                    <div class="tool-icon">📐</div>
+                    <h3>Structural Properties</h3>
+                    <p style="margin-bottom: 1rem;">Check load-bearing capacity, span tables, and strength ratings for construction lumber.</p>
+                    <ul style="list-style: none; padding: 0;">
+                        <li style="padding: 0.5rem 0;">✓ Joist and beam sizing</li>
+                        <li style="padding: 0.5rem 0;">✓ Species strength comparison</li>
+                        <li style="padding: 0.5rem 0;">✓ Deflection calculations</li>
+                        <li style="padding: 0.5rem 0;">✓ Grade stamps decoder</li>
+                    </ul>
+                </div>
+
+                <div class="tool-card">
+                    <div class="tool-icon">🏗️</div>
+                    <h3>Framing Guide</h3>
+                    <p style="margin-bottom: 1rem;">Optimal wood species for different framing applications and building codes.</p>
+                    <ul style="list-style: none; padding: 0;">
+                        <li style="padding: 0.5rem 0;">✓ Wall framing recommendations</li>
+                        <li style="padding: 0.5rem 0;">✓ Roof trusses and rafters</li>
+                        <li style="padding: 0.5rem 0;">✓ Floor system selection</li>
+                        <li style="padding: 0.5rem 0;">✓ Moisture content requirements</li>
+                    </ul>
+                </div>
+
+                <div class="tool-card">
+                    <div class="tool-icon">🌧️</div>
+                    <h3>Weather Resistance</h3>
+                    <p style="margin-bottom: 1rem;">Durability ratings for exterior applications and weather exposure.</p>
+                    <ul style="list-style: none; padding: 0;">
+                        <li style="padding: 0.5rem 0;">✓ Rot resistance ratings</li>
+                        <li style="padding: 0.5rem 0;">✓ Exterior siding options</li>
+                        <li style="padding: 0.5rem 0;">✓ Deck and fence materials</li>
+                        <li style="padding: 0.5rem 0;">✓ Treatment recommendations</li>
+                    </ul>
+                </div>
+
+                <div class="tool-card">
+                    <div class="tool-icon">💰</div>
+                    <h3>Cost Calculator</h3>
+                    <p style="margin-bottom: 1rem;">Compare material costs and calculate board feet for your projects.</p>
+                    <ul style="list-style: none; padding: 0;">
+                        <li style="padding: 0.5rem 0;">✓ Board foot calculator</li>
+                        <li style="padding: 0.5rem 0;">✓ Regional pricing data</li>
+                        <li style="padding: 0.5rem 0;">✓ Alternative species suggestions</li>
+                        <li style="padding: 0.5rem 0;">✓ Waste factor calculations</li>
+                    </ul>
+                </div>
+
+                <div class="tool-card">
+                    <div class="tool-icon">🔩</div>
+                    <h3>Fastener Guide</h3>
+                    <p style="margin-bottom: 1rem;">Proper nail, screw, and bolt selection for each wood species.</p>
+                    <ul style="list-style: none; padding: 0;">
+                        <li style="padding: 0.5rem 0;">✓ Nail size recommendations</li>
+                        <li style="padding: 0.5rem 0;">✓ Pre-drilling requirements</li>
+                        <li style="padding: 0.5rem 0;">✓ Structural connector types</li>
+                        <li style="padding: 0.5rem 0;">✓ Corrosion considerations</li>
+                    </ul>
+                </div>
+
+                <div class="tool-card">
+                    <div class="tool-icon">📋</div>
+                    <h3>Building Codes</h3>
+                    <p style="margin-bottom: 1rem;">Species approved for structural use and code requirements.</p>
+                    <ul style="list-style: none; padding: 0;">
+                        <li style="padding: 0.5rem 0;">✓ IRC/IBC specifications</li>
+                        <li style="padding: 0.5rem 0;">✓ Fire rating information</li>
+                        <li style="padding: 0.5rem 0;">✓ Approved species lists</li>
+                        <li style="padding: 0.5rem 0;">✓ Inspection guidelines</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="results-card">
+                <h3>Popular Construction Woods</h3>
+                <div class="wood-grid">
+                    <div class="wood-card">
+                        <h4>Douglas Fir</h4>
+                        <p style="margin: 0.5rem 0; color: var(--bark-medium);">The gold standard for structural framing</p>
+                        <span class="wood-category">Framing</span>
+                    </div>
+                    <div class="wood-card">
+                        <h4>Southern Yellow Pine</h4>
+                        <p style="margin: 0.5rem 0; color: var(--bark-medium);">Strong, economical pressure-treated option</p>
+                        <span class="wood-category">Outdoor</span>
+                    </div>
+                    <div class="wood-card">
+                        <h4>Hem-Fir</h4>
+                        <p style="margin: 0.5rem 0; color: var(--bark-medium);">Lightweight, easy to work with</p>
+                        <span class="wood-category">Framing</span>
+                    </div>
+                    <div class="wood-card">
+                        <h4>Redwood</h4>
+                        <p style="margin: 0.5rem 0; color: var(--bark-medium);">Natural decay resistance</p>
+                        <span class="wood-category">Exterior</span>
+                    </div>
+                    <div class="wood-card">
+                        <h4>Cedar</h4>
+                        <p style="margin: 0.5rem 0; color: var(--bark-medium);">Beautiful and naturally weather-resistant</p>
+                        <span class="wood-category">Siding</span>
+                    </div>
+                    <div class="wood-card">
+                        <h4>Spruce-Pine-Fir</h4>
+                        <p style="margin: 0.5rem 0; color: var(--bark-medium);">Cost-effective framing lumber</p>
+                        <span class="wood-category">Framing</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Woodworker's Hub Tab -->
+        <div class="tab-content" id="woodworker">
+            <div class="feature-highlight">
+                <h2>🪚 Woodworker's Hub</h2>
+                <p style="font-size: 1.2rem;">Advanced resources for fine woodworking and furniture making</p>
+            </div>
+
+            <div class="professional-tools">
+                <div class="tool-card">
+                    <div class="tool-icon">✂️</div>
+                    <h3>Machining Properties</h3>
+                    <p style="margin-bottom: 1rem;">How each species performs with various woodworking tools and techniques.</p>
+                    <ul style="list-style: none; padding: 0;">
+                        <li style="padding: 0.5rem 0;">✓ Planing characteristics</li>
+                        <li style="padding: 0.5rem 0;">✓ Turning suitability</li>
+                        <li style="padding: 0.5rem 0;">✓ Routing and carving</li>
+                        <li style="padding: 0.5rem 0;">✓ Sawing behavior</li>
+                    </ul>
+                </div>
+
+                <div class="tool-card">
+                    <div class="tool-icon">🎨</div>
+                    <h3>Finishing Guide</h3>
+                    <p style="margin-bottom: 1rem;">Optimal finishing techniques, stains, and sealers for each wood type.</p>
+                    <ul style="list-style: none; padding: 0;">
+                        <li style="padding: 0.5rem 0;">✓ Stain absorption rates</li>
+                        <li style="padding: 0.5rem 0;">✓ Oil vs. varnish recommendations</li>
+                        <li style="padding: 0.5rem 0;">✓ Grain filler requirements</li>
+                        <li style="padding: 0.5rem 0;">✓ Coloring characteristics</li>
+                    </ul>
+                </div>
+
+                <div class="tool-card">
+                    <div class="tool-icon">🔗</div>
+                    <h3>Joinery Selector</h3>
+                    <p style="margin-bottom: 1rem;">Best joinery methods based on wood properties and project requirements.</p>
+                    <ul style="list-style: none; padding: 0;">
+                        <li style="padding: 0.5rem 0;">✓ Mortise and tenon strength</li>
+                        <li style="padding: 0.5rem 0;">✓ Dovetail suitability</li>
+                        <li style="padding: 0.5rem 0;">✓ Biscuit joint performance</li>
+                        <li style="padding: 0.5rem 0;">✓ Glue compatibility</li>
+                    </ul>
+                </div>
+
+                <div class="tool-card">
+                    <div class="tool-icon">🌀</div>
+                    <h3>Grain Matcher</h3>
+                    <p style="margin-bottom: 1rem;">Understand grain patterns and select perfect boards for your project.</p>
+                    <ul style="list-style: none; padding: 0;">
+                        <li style="padding: 0.5rem 0;">✓ Quartersawn vs. plain sawn</li>
+                        <li style="padding: 0.5rem 0;">✓ Figure identification</li>
+                        <li style="padding: 0.5rem 0;">✓ Grain matching techniques</li>
+                        <li style="padding: 0.5rem 0;">✓ Movement prediction</li>
+                    </ul>
+                </div>
+
+                <div class="tool-card">
+                    <div class="tool-icon">🔧</div>
+                    <h3>Tool Setup</h3>
+                    <p style="margin-bottom: 1rem;">Recommended blade angles, feeds, and speeds for each species.</p>
+                    <ul style="list-style: none; padding: 0;">
+                        <li style="padding: 0.5rem 0;">✓ Table saw blade selection</li>
+                        <li style="padding: 0.5rem 0;">✓ Planer knife angles</li>
+                        <li style="padding: 0.5rem 0;">✓ Router bit speeds</li>
+                        <li style="padding: 0.5rem 0;">✓ Sanding progression</li>
+                    </ul>
+                </div>
+
+                <div class="tool-card">
+                    <div class="tool-icon">💎</div>
+                    <h3>Premium Woods</h3>
+                    <p style="margin-bottom: 1rem;">Exotic and specialty woods for high-end projects and unique applications.</p>
+                    <ul style="list-style: none; padding: 0;">
+                        <li style="padding: 0.5rem 0;">✓ Figured and exotic species</li>
+                        <li style="padding: 0.5rem 0;">✓ Sourcing and availability</li>
+                        <li style="padding: 0.5rem 0;">✓ Working challenges</li>
+                        <li style="padding: 0.5rem 0;">✓ Sustainability concerns</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="results-card">
+                <h3>Popular Woodworking Species</h3>
+                <div class="wood-grid">
+                    <div class="wood-card">
+                        <h4>Black Walnut</h4>
+                        <p style="margin: 0.5rem 0; color: var(--bark-medium);">Rich chocolate color, premium furniture</p>
+                        <span class="wood-category">Hardwood</span>
+                    </div>
+                    <div class="wood-card">
+                        <h4>Cherry</h4>
+                        <p style="margin: 0.5rem 0; color: var(--bark-medium);">Ages beautifully, fine cabinetry</p>
+                        <span class="wood-category">Hardwood</span>
+                    </div>
+                    <div class="wood-card">
+                        <h4>Hard Maple</h4>
+                        <p style="margin: 0.5rem 0; color: var(--bark-medium);">Dense, light color, durable</p>
+                        <span class="wood-category">Hardwood</span>
+                    </div>
+                    <div class="wood-card">
+                        <h4>White Oak</h4>
+                        <p style="margin: 0.5rem 0; color: var(--bark-medium);">Classic furniture wood, ray fleck</p>
+                        <span class="wood-category">Hardwood</span>
+                    </div>
+                    <div class="wood-card">
+                        <h4>Mahogany</h4>
+                        <p style="margin: 0.5rem 0; color: var(--bark-medium);">Traditional, works beautifully</p>
+                        <span class="wood-category">Exotic</span>
+                    </div>
+                    <div class="wood-card">
+                        <h4>Ash</h4>
+                        <p style="margin: 0.5rem 0; color: var(--bark-medium);">Strong, flexible, great grain</p>
+                        <span class="wood-category">Hardwood</span>
+                    </div>
+                    <div class="wood-card">
+                        <h4>Teak</h4>
+                        <p style="margin: 0.5rem 0; color: var(--bark-medium);">Outdoor furniture, naturally oily</p>
+                        <span class="wood-category">Exotic</span>
+                    </div>
+                    <div class="wood-card">
+                        <h4>Curly Maple</h4>
+                        <p style="margin: 0.5rem 0; color: var(--bark-medium);">Stunning figure, guitars and instruments</p>
+                        <span class="wood-category">Figured</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Wood Database Tab -->
+        <div class="tab-content" id="database">
+            <div class="database-section">
+                <h2 style="font-family: 'Crimson Pro', serif; font-size: 3rem; margin-bottom: 1rem;">📚 Comprehensive Wood Database</h2>
+                <p style="font-size: 1.1rem; color: var(--bark-medium); margin-bottom: 2rem;">
+                    Explore detailed information about over 200 wood species from around the world
+                </p>
+
+                <div class="country-selector">
+                    <h3 style="font-family: 'Crimson Pro', serif; font-size: 2rem; margin-bottom: 1rem;">🌍 Browse by Country</h3>
+                    <p style="color: var(--bark-medium); margin-bottom: 1rem;">Discover native and commonly used woods in different regions</p>
+                    <select class="country-dropdown" id="countrySelect">
+                        <option value="all">All Woods</option>
+                        <option value="usa">🇺🇸 United States</option>
+                        <option value="canada">🇨🇦 Canada</option>
+                        <option value="uk">🇬🇧 United Kingdom</option>
+                        <option value="greece">🇬🇷 Greece</option>
+                        <option value="italy">🇮🇹 Italy</option>
+                        <option value="spain">🇪🇸 Spain</option>
+                        <option value="france">🇫🇷 France</option>
+                        <option value="germany">🇩🇪 Germany</option>
+                        <option value="sweden">🇸🇪 Sweden</option>
+                        <option value="brazil">🇧🇷 Brazil</option>
+                        <option value="japan">🇯🇵 Japan</option>
+                        <option value="australia">🇦🇺 Australia</option>
+                        <option value="india">🇮🇳 India</option>
+                        <option value="thailand">🇹🇭 Thailand</option>
+                        <option value="mexico">🇲🇽 Mexico</option>
+                    </select>
+                </div>
+
+                <input type="text" class="search-box" id="woodSearch" placeholder="Search by species name, properties, or uses...">
+
+                <div class="wood-grid" id="woodGrid">
+                    <div class="wood-card" data-countries="usa,canada,uk">
+                        <h4>White Oak</h4>
+                        <p style="margin: 0.5rem 0; color: var(--bark-medium);">Janka: 1,360 | Density: 770 kg/m³</p>
+                        <p style="margin: 0.5rem 0; font-size: 0.9rem;">Water-resistant, excellent for furniture and barrels</p>
+                        <span class="wood-category">Hardwood</span>
+                    </div>
+                    <div class="wood-card" data-countries="usa,canada">
+                        <h4>Douglas Fir</h4>
+                        <p style="margin: 0.5rem 0; color: var(--bark-medium);">Janka: 660 | Density: 530 kg/m³</p>
+                        <p style="margin: 0.5rem 0; font-size: 0.9rem;">Strong softwood, ideal for construction framing</p>
+                        <span class="wood-category">Softwood</span>
+                    </div>
+                    <div class="wood-card" data-countries="usa,canada">
+                        <h4>Black Walnut</h4>
+                        <p style="margin: 0.5rem 0; color: var(--bark-medium);">Janka: 1,010 | Density: 610 kg/m³</p>
+                        <p style="margin: 0.5rem 0; font-size: 0.9rem;">Rich dark color, premium furniture wood</p>
+                        <span class="wood-category">Hardwood</span>
+                    </div>
+                    <div class="wood-card" data-countries="usa,canada">
+                        <h4>Hard Maple</h4>
+                        <p style="margin: 0.5rem 0; color: var(--bark-medium);">Janka: 1,450 | Density: 705 kg/m³</p>
+                        <p style="margin: 0.5rem 0; font-size: 0.9rem;">Very hard, excellent for flooring and butcher blocks</p>
+                        <span class="wood-category">Hardwood</span>
+                    </div>
+                    <div class="wood-card" data-countries="usa,canada">
+                        <h4>Mahogany</h4>
+                        <p style="margin: 0.5rem 0; color: var(--bark-medium);">Janka: 800 | Density: 590 kg/m³</p>
+                        <p style="margin: 0.5rem 0; font-size: 0.9rem;">Classic furniture wood, stable and beautiful</p>
+                        <span class="wood-category">Exotic</span>
+                    </div>
+                    <div class="wood-card" data-countries="brazil,mexico">
+                        <h4>Western Red Cedar</h4>
+                        <p style="margin: 0.5rem 0; color: var(--bark-medium);">Janka: 350 | Density: 370 kg/m³</p>
+                        <p style="margin: 0.5rem 0; font-size: 0.9rem;">Naturally rot-resistant, perfect for outdoor use</p>
+                        <span class="wood-category">Softwood</span>
+                    </div>
+                    <div class="wood-card" data-countries="usa,canada">
+                        <h4>Cherry</h4>
+                        <p style="margin: 0.5rem 0; color: var(--bark-medium);">Janka: 995 | Density: 560 kg/m³</p>
+                        <p style="margin: 0.5rem 0; font-size: 0.9rem;">Ages to rich red-brown, fine cabinetry</p>
+                        <span class="wood-category">Hardwood</span>
+                    </div>
+                    <div class="wood-card" data-countries="usa,canada">
+                        <h4>Hickory</h4>
+                        <p style="margin: 0.5rem 0; color: var(--bark-medium);">Janka: 1,820 | Density: 835 kg/m³</p>
+                        <p style="margin: 0.5rem 0; font-size: 0.9rem;">Extremely hard, tool handles and smoking</p>
+                        <span class="wood-category">Hardwood</span>
+                    </div>
+                    <div class="wood-card" data-countries="usa">
+                        <h4>Ash</h4>
+                        <p style="margin: 0.5rem 0; color: var(--bark-medium);">Janka: 1,320 | Density: 670 kg/m³</p>
+                        <p style="margin: 0.5rem 0; font-size: 0.9rem;">Flexible and strong, excellent for bending</p>
+                        <span class="wood-category">Hardwood</span>
+                    </div>
+                    <div class="wood-card" data-countries="usa,uk,france">
+                        <h4>Teak</h4>
+                        <p style="margin: 0.5rem 0; color: var(--bark-medium);">Janka: 1,070 | Density: 655 kg/m³</p>
+                        <p style="margin: 0.5rem 0; font-size: 0.9rem;">Naturally oily, perfect for marine applications</p>
+                        <span class="wood-category">Exotic</span>
+                    </div>
+                    <div class="wood-card" data-countries="thailand,india,brazil">
+                        <h4>Pine (White)</h4>
+                        <p style="margin: 0.5rem 0; color: var(--bark-medium);">Janka: 420 | Density: 420 kg/m³</p>
+                        <p style="margin: 0.5rem 0; font-size: 0.9rem;">Easy to work, economical softwood</p>
+                        <span class="wood-category">Softwood</span>
+                    </div>
+                    <div class="wood-card" data-countries="usa,canada,sweden,germany">
+                        <h4>Birch (Yellow)</h4>
+                        <p style="margin: 0.5rem 0; color: var(--bark-medium);">Janka: 1,260 | Density: 705 kg/m³</p>
+                        <p style="margin: 0.5rem 0; font-size: 0.9rem;">Strong, fine grain, plywood favorite</p>
+                        <span class="wood-category">Hardwood</span>
+                    </div>
+                    <div class="wood-card" data-countries="greece,italy,spain,france">
+                        <h4>Olive</h4>
+                        <p style="margin: 0.5rem 0; color: var(--bark-medium);">Janka: 1,600 | Density: 990 kg/m³</p>
+                        <p style="margin: 0.5rem 0; font-size: 0.9rem;">Beautiful grain, perfect for cutting boards and bowls</p>
+                        <span class="wood-category">Hardwood</span>
+                    </div>
+                    <div class="wood-card" data-countries="greece,spain,italy">
+                        <h4>Cypress</h4>
+                        <p style="margin: 0.5rem 0; color: var(--bark-medium);">Janka: 510 | Density: 510 kg/m³</p>
+                        <p style="margin: 0.5rem 0; font-size: 0.9rem;">Rot-resistant, outdoor construction</p>
+                        <span class="wood-category">Softwood</span>
+                    </div>
+                    <div class="wood-card" data-countries="uk,france,germany">
+                        <h4>Beech</h4>
+                        <p style="margin: 0.5rem 0; color: var(--bark-medium);">Janka: 1,450 | Density: 720 kg/m³</p>
+                        <p style="margin: 0.5rem 0; font-size: 0.9rem;">Excellent for steam bending, furniture</p>
+                        <span class="wood-category">Hardwood</span>
+                    </div>
+                    <div class="wood-card" data-countries="sweden,germany,canada">
+                        <h4>Spruce (Norway)</h4>
+                        <p style="margin: 0.5rem 0; color: var(--bark-medium);">Janka: 480 | Density: 470 kg/m³</p>
+                        <p style="margin: 0.5rem 0; font-size: 0.9rem;">Musical instruments, construction</p>
+                        <span class="wood-category">Softwood</span>
+                    </div>
+                    <div class="wood-card" data-countries="greece,italy,spain">
+                        <h4>Chestnut (Sweet)</h4>
+                        <p style="margin: 0.5rem 0; color: var(--bark-medium);">Janka: 540 | Density: 560 kg/m³</p>
+                        <p style="margin: 0.5rem 0; font-size: 0.9rem;">Durable, similar to oak, furniture and beams</p>
+                        <span class="wood-category">Hardwood</span>
+                    </div>
+                    <div class="wood-card" data-countries="australia">
+                        <h4>Jarrah</h4>
+                        <p style="margin: 0.5rem 0; color: var(--bark-medium);">Janka: 1,910 | Density: 820 kg/m³</p>
+                        <p style="margin: 0.5rem 0; font-size: 0.9rem;">Termite-resistant, outdoor decking and flooring</p>
+                        <span class="wood-category">Hardwood</span>
+                    </div>
+                    <div class="wood-card" data-countries="japan">
+                        <h4>Hinoki (Japanese Cypress)</h4>
+                        <p style="margin: 0.5rem 0; color: var(--bark-medium);">Janka: 380 | Density: 410 kg/m³</p>
+                        <p style="margin: 0.5rem 0; font-size: 0.9rem;">Aromatic, sacred temples and baths</p>
+                        <span class="wood-category">Softwood</span>
+                    </div>
+                    <div class="wood-card" data-countries="india,thailand">
+                        <h4>Rosewood (Indian)</h4>
+                        <p style="margin: 0.5rem 0; color: var(--bark-medium);">Janka: 1,780 | Density: 830 kg/m³</p>
+                        <p style="margin: 0.5rem 0; font-size: 0.9rem;">Musical instruments, fine furniture</p>
+                        <span class="wood-category">Exotic</span>
+                    </div>
+                    <div class="wood-card" data-countries="brazil">
+                        <h4>Ipe (Brazilian Walnut)</h4>
+                        <p style="margin: 0.5rem 0; color: var(--bark-medium);">Janka: 3,684 | Density: 1,100 kg/m³</p>
+                        <p style="margin: 0.5rem 0; font-size: 0.9rem;">Extremely dense and durable, premium decking</p>
+                        <span class="wood-category">Exotic</span>
+                    </div>
+                    <div class="wood-card" data-countries="france,italy,spain">
+                        <h4>Walnut (European)</h4>
+                        <p style="margin: 0.5rem 0; color: var(--bark-medium);">Janka: 1,220 | Density: 640 kg/m³</p>
+                        <p style="margin: 0.5rem 0; font-size: 0.9rem;">Figured grain, gun stocks and veneers</p>
+                        <span class="wood-category">Hardwood</span>
+                    </div>
+                    <div class="wood-card" data-countries="mexico,brazil">
+                        <h4>Cocobolo</h4>
+                        <p style="margin: 0.5rem 0; color: var(--bark-medium);">Janka: 2,960 | Density: 1,095 kg/m³</p>
+                        <p style="margin: 0.5rem 0; font-size: 0.9rem;">Beautiful colors, knife handles and turned items</p>
+                        <span class="wood-category">Exotic</span>
+                    </div>
+                    <div class="wood-card" data-countries="australia">
+                        <h4>Blackwood (Australian)</h4>
+                        <p style="margin: 0.5rem 0; color: var(--bark-medium);">Janka: 1,160 | Density: 660 kg/m³</p>
+                        <p style="margin: 0.5rem 0; font-size: 0.9rem;">Musical instruments and fine furniture</p>
+                        <span class="wood-category">Hardwood</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Food Pairing Tab -->
+        <div class="tab-content" id="foodpairing">
+            <div class="feature-highlight">
+                <h2>🍖 Smart Food Pairing</h2>
+                <p style="font-size: 1.2rem;">Match your wood with the perfect recipe for optimal flavor</p>
+            </div>
+
+            <div class="upload-section">
+                <h2 style="font-family: 'Crimson Pro', serif; font-size: 2.5rem; margin-bottom: 2rem;">What Are You Cooking?</h2>
+                
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1.5rem; margin-bottom: 3rem;">
+                    <div class="wood-card" onclick="suggestWoodForMeat('beef')" style="cursor: pointer; text-align: center; padding: 2rem;">
+                        <div style="font-size: 4rem;">🥩</div>
+                        <h4>Beef & Brisket</h4>
+                        <p style="margin-top: 0.5rem; color: var(--bark-medium);">Heavy meats, steaks, ribs</p>
+                    </div>
+                    <div class="wood-card" onclick="suggestWoodForMeat('pork')" style="cursor: pointer; text-align: center; padding: 2rem;">
+                        <div style="font-size: 4rem;">🐷</div>
+                        <h4>Pork & Ribs</h4>
+                        <p style="margin-top: 0.5rem; color: var(--bark-medium);">Pulled pork, chops, bacon</p>
+                    </div>
+                    <div class="wood-card" onclick="suggestWoodForMeat('chicken')" style="cursor: pointer; text-align: center; padding: 2rem;">
+                        <div style="font-size: 4rem;">🍗</div>
+                        <h4>Poultry</h4>
+                        <p style="margin-top: 0.5rem; color: var(--bark-medium);">Chicken, turkey, duck</p>
+                    </div>
+                    <div class="wood-card" onclick="suggestWoodForMeat('fish')" style="cursor: pointer; text-align: center; padding: 2rem;">
+                        <div style="font-size: 4rem;">🐟</div>
+                        <h4>Fish & Seafood</h4>
+                        <p style="margin-top: 0.5rem; color: var(--bark-medium);">Salmon, trout, shellfish</p>
+                    </div>
+                    <div class="wood-card" onclick="suggestWoodForMeat('lamb')" style="cursor: pointer; text-align: center; padding: 2rem;">
+                        <div style="font-size: 4rem;">🐑</div>
+                        <h4>Lamb & Game</h4>
+                        <p style="margin-top: 0.5rem; color: var(--bark-medium);">Venison, wild boar, lamb</p>
+                    </div>
+                    <div class="wood-card" onclick="suggestWoodForMeat('vegetables')" style="cursor: pointer; text-align: center; padding: 2rem;">
+                        <div style="font-size: 4rem;">🥗</div>
+                        <h4>Vegetables</h4>
+                        <p style="margin-top: 0.5rem; color: var(--bark-medium);">Peppers, eggplant, corn</p>
+                    </div>
+                </div>
+
+                <div id="woodSuggestions" style="display: none;">
+                    <h3 style="font-family: 'Crimson Pro', serif; font-size: 2rem; margin-bottom: 1.5rem;">Best Woods for <span id="selectedMeat"></span></h3>
+                    <div id="suggestionGrid" class="wood-grid"></div>
+                </div>
+            </div>
+
+            <div class="results-card">
+                <h3>🔥 Wood Mixing Calculator</h3>
+                <p style="margin-bottom: 2rem; color: var(--bark-medium);">Create custom flavor blends for complex smoke profiles</p>
+                
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 2rem;">
+                    <div>
+                        <label class="form-label">Primary Wood (60-80%)</label>
+                        <select class="stripe-input" id="primaryWood">
+                            <option value="oak">Oak - Balanced, Medium</option>
+                            <option value="hickory">Hickory - Strong, Bacon-like</option>
+                            <option value="mesquite">Mesquite - Intense, Earthy</option>
+                            <option value="pecan">Pecan - Sweet, Nutty</option>
+                        </select>
+                        <input type="range" min="50" max="90" value="70" id="primaryPercent" style="width: 100%; margin-top: 1rem;">
+                        <div style="text-align: center; font-weight: 600;" id="primaryPercentDisplay">70%</div>
+                    </div>
+                    
+                    <div>
+                        <label class="form-label">Secondary Wood (10-40%)</label>
+                        <select class="stripe-input" id="secondaryWood">
+                            <option value="apple">Apple - Mild, Fruity</option>
+                            <option value="cherry">Cherry - Sweet, Mild</option>
+                            <option value="maple">Maple - Subtle, Sweet</option>
+                            <option value="alder">Alder - Delicate, Musky</option>
+                        </select>
+                        <div style="text-align: center; font-weight: 600; margin-top: 2rem;" id="secondaryPercentDisplay">30%</div>
+                    </div>
+                </div>
+
+                <div style="background: var(--cream); padding: 2rem; margin-top: 2rem; border: 2px solid var(--bark-dark);">
+                    <h4 style="margin-bottom: 1rem;">Your Custom Blend</h4>
+                    <div id="blendResult" style="font-size: 1.2rem; color: var(--bark-dark);"></div>
+                    <div style="margin-top: 1rem; padding-top: 1rem; border-top: 2px dashed var(--sage);">
+                        <strong>Recommended for:</strong> <span id="blendRecommendation"></span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Moisture Check Tab -->
+        <div class="tab-content" id="moisture">
+            <div class="feature-highlight">
+                <h2>💧 Moisture Meter</h2>
+                <p style="font-size: 1.2rem;">Check if your wood is ready to burn</p>
+            </div>
+
+            <div class="upload-section">
+                <h2 style="font-family: 'Crimson Pro', serif; font-size: 2.5rem; margin-bottom: 2rem;">Upload Wood Photo</h2>
+                <p style="color: var(--bark-medium); margin-bottom: 2rem;">Take a clear photo of the cut end showing any cracks or checking</p>
+                
+                <div class="upload-area" id="moistureUpload">
+                    <div class="upload-icon">💧</div>
+                    <h3 style="font-size: 1.5rem; margin-bottom: 0.5rem;">Check Moisture Level</h3>
+                    <p style="color: var(--bark-medium);">Photo analysis estimates moisture content</p>
+                    <p style="color: var(--sage); font-size: 0.9rem; margin-top: 1rem;">Drag & drop or click to select</p>
+                    <input type="file" id="moistureFile" accept="image/*">
+                </div>
+                <div id="moisturePreview" class="preview-container"></div>
+                <div style="text-align: center; margin-top: 2rem;">
+                    <button class="btn" id="checkMoistureBtn" style="display: none;">Analyze Moisture</button>
+                </div>
+            </div>
+
+            <div id="moistureResults" style="display: none;">
+                <div class="results-card">
+                    <h3>💧 Moisture Analysis</h3>
+                    
+                    <div style="background: linear-gradient(135deg, #4A90E2 0%, #357ABD 100%); color: white; padding: 3rem; text-align: center; border: 3px solid var(--bark-dark); margin-bottom: 2rem;">
+                        <div style="font-size: 5rem; font-weight: 700; margin-bottom: 1rem;">18%</div>
+                        <div style="font-size: 1.5rem; opacity: 0.9;">Estimated Moisture Content</div>
+                    </div>
+
+                    <div class="property-grid">
+                        <div class="property-item">
+                            <div class="property-label">Status</div>
+                            <div class="property-value" style="color: var(--leaf-green);">✓ Ready to Burn</div>
+                        </div>
+                        <div class="property-item">
+                            <div class="property-label">Optimal Range</div>
+                            <div class="property-value">15-20%</div>
+                        </div>
+                        <div class="property-item">
+                            <div class="property-label">Wood Species</div>
+                            <div class="property-value">Oak (Hardwood)</div>
+                        </div>
+                        <div class="property-item">
+                            <div class="property-label">Seasoning Time</div>
+                            <div class="property-value">12-18 months</div>
+                        </div>
+                    </div>
+
+                    <div class="info-cards">
+                        <div class="info-card">
+                            <h4>Visual Indicators Detected</h4>
+                            <ul>
+                                <li>Deep radial cracks present</li>
+                                <li>Bark loosening/separating</li>
+                                <li>Lighter color at cut end</li>
+                                <li>No visible dampness</li>
+                                <li>Checking pattern developed</li>
+                            </ul>
+                        </div>
+
+                        <div class="info-card">
+                            <h4>Burn Performance Prediction</h4>
+                            <ul>
+                                <li>Clean burn with minimal smoke</li>
+                                <li>Easy ignition expected</li>
+                                <li>High heat output</li>
+                                <li>No hissing or steam</li>
+                                <li>Long-lasting coals</li>
+                            </ul>
+                        </div>
+
+                        <div class="info-card">
+                            <h4>Storage Recommendations</h4>
+                            <ul>
+                                <li>Can be burned immediately</li>
+                                <li>Store in covered area</li>
+                                <li>Keep off ground</li>
+                                <li>Use within 2-3 years</li>
+                                <li>Protect from rain</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div style="background: var(--fire-orange); color: white; padding: 2rem; margin-top: 2rem; border: 3px solid var(--bark-dark);">
+                        <h4 style="font-size: 1.8rem; margin-bottom: 1rem; color: white;">💡 Pro Tip</h4>
+                        <p style="font-size: 1.1rem; line-height: 1.8;">
+                            This oak is perfectly seasoned! At 18% moisture, you'll get maximum heat output and minimal creosote buildup in your chimney. Wood this dry will light quickly and burn hot - perfect for cold winter nights.
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="results-card">
+                <h3>📅 Seasoning Time Calculator</h3>
+                <p style="margin-bottom: 2rem; color: var(--bark-medium);">How long until your green wood is ready?</p>
+                
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1.5rem; margin-bottom: 2rem;">
+                    <div>
+                        <label class="form-label">Wood Species</label>
+                        <select class="stripe-input" id="seasoningSpecies">
+                            <option value="oak">Oak (12-24 months)</option>
+                            <option value="ash">Ash (6-12 months)</option>
+                            <option value="pine">Pine (6-8 months)</option>
+                            <option value="maple">Maple (6-12 months)</option>
+                            <option value="cherry">Cherry (8-12 months)</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="form-label">When Did You Cut/Split?</label>
+                        <input type="date" class="stripe-input" id="cutDate">
+                    </div>
+                    <div>
+                        <label class="form-label">Storage Conditions</label>
+                        <select class="stripe-input" id="storageConditions">
+                            <option value="ideal">Covered, off ground, good airflow</option>
+                            <option value="good">Partially covered, decent airflow</option>
+                            <option value="poor">Uncovered or on ground</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <button class="btn" onclick="calculateSeasoning()" style="width: 100%;">Calculate Ready Date</button>
+                
+                <div id="seasoningResult" style="display: none; margin-top: 2rem; background: var(--cream); padding: 2rem; border: 2px solid var(--leaf-green);">
+                    <h4 style="font-size: 1.5rem; margin-bottom: 1rem;">Your Wood Will Be Ready:</h4>
+                    <div style="font-size: 2.5rem; font-weight: 700; color: var(--leaf-green); margin: 1rem 0;" id="readyDate"></div>
+                    <div id="daysRemaining"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Community Tab -->
+        <div class="tab-content" id="community">
+            <div class="feature-highlight">
+                <h2>👥 WoodWise Community</h2>
+                <p style="font-size: 1.2rem;">Share projects, get help, connect with woodworkers and fire enthusiasts</p>
+            </div>
+
+            <div class="professional-tools">
+                <div class="tool-card">
+                    <div class="tool-icon">📸</div>
+                    <h3>Project Gallery</h3>
+                    <p style="margin-bottom: 1rem;">Share your woodworking projects and firewood stacks with the community</p>
+                    <button class="btn" style="width: 100%; padding: 0.7rem;">Share Your Project</button>
+                </div>
+
+                <div class="tool-card">
+                    <div class="tool-icon">❓</div>
+                    <h3>Ask the Experts</h3>
+                    <p style="margin-bottom: 1rem;">Get help identifying tricky wood species from experienced pros</p>
+                    <button class="btn" style="width: 100%; padding: 0.7rem;">Post a Question</button>
+                </div>
+
+                <div class="tool-card">
+                    <div class="tool-icon">📦</div>
+                    <h3>My Wood Inventory</h3>
+                    <p style="margin-bottom: 1rem;">Track your firewood and lumber collection</p>
+                    <button class="btn" style="width: 100%; padding: 0.7rem;">Manage Inventory</button>
+                </div>
+
+                <div class="tool-card">
+                    <div class="tool-icon">🗺️</div>
+                    <h3>Local Suppliers</h3>
+                    <p style="margin-bottom: 1rem;">Find trusted wood suppliers near you with reviews and ratings</p>
+                    <button class="btn" style="width: 100%; padding: 0.7rem;">Search Suppliers</button>
+                </div>
+
+                <div class="tool-card">
+                    <div class="tool-icon">⭐</div>
+                    <h3>Rate & Review Woods</h3>
+                    <p style="margin-bottom: 1rem;">Share your experience with different wood species</p>
+                    <button class="btn" style="width: 100%; padding: 0.7rem;">Write a Review</button>
+                </div>
+
+                <div class="tool-card">
+                    <div class="tool-icon">🏆</div>
+                    <h3>Leaderboard</h3>
+                    <p style="margin-bottom: 1rem;">Top contributors and most helpful members</p>
+                    <button class="btn" style="width: 100%; padding: 0.7rem;">View Rankings</button>
+                </div>
+            </div>
+
+            <div class="results-card">
+                <h3>🔥 Featured Community Projects</h3>
+                <div class="wood-grid">
+                    <div class="wood-card">
+                        <div style="background: var(--sage); height: 200px; display: flex; align-items: center; justify-content: center; color: white; font-size: 3rem; margin: -1.5rem -1.5rem 1rem -1.5rem;">
+                            🪑
+                        </div>
+                        <h4>Walnut Dining Table</h4>
+                        <p style="margin: 0.5rem 0; color: var(--bark-medium); font-size: 0.9rem;">by @woodworker_mike</p>
+                        <p style="margin: 0.5rem 0; font-size: 0.9rem;">8' live edge black walnut slab</p>
+                        <div style="display: flex; justify-content: space-between; margin-top: 1rem; padding-top: 1rem; border-top: 1px solid var(--cream);">
+                            <span>⭐ 4.9 (127)</span>
+                            <span>💬 34 comments</span>
+                        </div>
+                    </div>
+
+                    <div class="wood-card">
+                        <div style="background: var(--fire-orange); height: 200px; display: flex; align-items: center; justify-content: center; color: white; font-size: 3rem; margin: -1.5rem -1.5rem 1rem -1.5rem;">
+                            🔥
+                        </div>
+                        <h4>10-Cord Oak Stack</h4>
+                        <p style="margin: 0.5rem 0; color: var(--bark-medium); font-size: 0.9rem;">by @fireplace_pro</p>
+                        <p style="margin: 0.5rem 0; font-size: 0.9rem;">Perfectly seasoned 2-year oak</p>
+                        <div style="display: flex; justify-space-between; margin-top: 1rem; padding-top: 1rem; border-top: 1px solid var(--cream);">
+                            <span>⭐ 5.0 (89)</span>
+                            <span>💬 21 comments</span>
+                        </div>
+                    </div>
+
+                    <div class="wood-card">
+                        <div style="background: var(--wood-warm); height: 200px; display: flex; align-items: center; justify-content: center; color: white; font-size: 3rem; margin: -1.5rem -1.5rem 1rem -1.5rem;">
+                            🎸
+                        </div>
+                        <h4>Custom Mahogany Guitar</h4>
+                        <p style="margin: 0.5rem 0; color: var(--bark-medium); font-size: 0.9rem;">by @luthier_james</p>
+                        <p style="margin: 0.5rem 0; font-size: 0.9rem;">Honduran mahogany acoustic</p>
+                        <div style="display: flex; justify-content: space-between; margin-top: 1rem; padding-top: 1rem; border-top: 1px solid var(--cream);">
+                            <span>⭐ 4.8 (156)</span>
+                            <span>💬 67 comments</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // User credits system
+        let userCredits = 3;
+        const maxFreeCredits = 3;
+
+        function updateCreditsDisplay() {
+            document.getElementById('creditsDisplay').textContent = 
+                `🌲 Free Searches Remaining: ${userCredits} / ${maxFreeCredits}`;
+        }
+
+        function checkCredits() {
+            if (userCredits <= 0) {
+                document.getElementById('pricingModal').classList.add('active');
+                return false;
+            }
+            return true;
+        }
+
+        function useCredit() {
+            if (userCredits > 0) {
+                userCredits--;
+                updateCreditsDisplay();
+                
+                if (userCredits === 0) {
+                    setTimeout(() => {
+                        alert('🌲 You\'ve used all your free searches! Upgrade to Pro for unlimited identifications.');
+                        document.getElementById('pricingModal').classList.add('active');
+                    }, 2000);
+                }
+            }
+        }
+
+        // Pricing modal functions
+        document.getElementById('upgradeBtnTop').addEventListener('click', () => {
+            document.getElementById('pricingModal').classList.add('active');
+        });
+
+        document.getElementById('closeModal').addEventListener('click', () => {
+            document.getElementById('pricingModal').classList.remove('active');
+        });
+
+        // Click outside modal to close
+        document.getElementById('pricingModal').addEventListener('click', (e) => {
+            if (e.target.id === 'pricingModal') {
+                document.getElementById('pricingModal').classList.remove('active');
+            }
+        });
+
+        function selectPlan(planName) {
+            // Set up order details
+            const planDetails = {
+                'pro': { name: 'WoodWise Pro Plan', price: '$9.99', monthly: true },
+                'professional': { name: 'WoodWise Professional Plan', price: '$29.99', monthly: true }
+            };
+
+            const plan = planDetails[planName];
+            document.getElementById('orderItemName').textContent = plan.name + (plan.monthly ? ' (Monthly)' : '');
+            document.getElementById('orderItemPrice').textContent = plan.price;
+            document.getElementById('orderTotal').textContent = plan.price;
+            document.getElementById('payAmount').textContent = plan.price;
+
+            // Store plan info for success message
+            window.currentPlan = planName;
+            window.currentPlanName = plan.name;
+            window.currentPrice = plan.price;
+
+            // Close pricing modal and open Stripe modal
+            document.getElementById('pricingModal').classList.remove('active');
+            document.getElementById('stripeModal').classList.add('active');
+        }
+
+        function buyCredits(amount) {
+            const creditDetails = {
+                10: { price: '$4.99' },
+                50: { price: '$19.99' },
+                100: { price: '$34.99' }
+            };
+
+            const details = creditDetails[amount];
+            document.getElementById('orderItemName').textContent = `${amount} Search Credits`;
+            document.getElementById('orderItemPrice').textContent = details.price;
+            document.getElementById('orderTotal').textContent = details.price;
+            document.getElementById('payAmount').textContent = details.price;
+
+            // Store credit info for success message
+            window.currentPlan = 'credits';
+            window.currentPlanName = `${amount} Credits`;
+            window.currentPrice = details.price;
+            window.creditsAmount = amount;
+
+            // Close pricing modal and open Stripe modal
+            document.getElementById('pricingModal').classList.remove('active');
+            document.getElementById('stripeModal').classList.add('active');
+        }
+
+        // Stripe modal controls
+        document.getElementById('stripeClose').addEventListener('click', () => {
+            document.getElementById('stripeModal').classList.remove('active');
+            document.getElementById('stripeForm').reset();
+        });
+
+        // Close on background click
+        document.getElementById('stripeModal').addEventListener('click', (e) => {
+            if (e.target.id === 'stripeModal') {
+                document.getElementById('stripeModal').classList.remove('active');
+                document.getElementById('stripeForm').reset();
+            }
+        });
+
+        // Card number formatting
+        document.getElementById('cardNumber').addEventListener('input', (e) => {
+            let value = e.target.value.replace(/\s/g, '');
+            let formattedValue = value.match(/.{1,4}/g)?.join(' ') || value;
+            e.target.value = formattedValue;
+        });
+
+        // Expiry date formatting
+        document.getElementById('cardExpiry').addEventListener('input', (e) => {
+            let value = e.target.value.replace(/\D/g, '');
+            if (value.length >= 2) {
+                value = value.slice(0, 2) + ' / ' + value.slice(2, 4);
+            }
+            e.target.value = value;
+        });
+
+        // CVC validation
+        document.getElementById('cardCvc').addEventListener('input', (e) => {
+            e.target.value = e.target.value.replace(/\D/g, '');
+        });
+
+        // Form submission
+        document.getElementById('stripeForm').addEventListener('submit', (e) => {
+            e.preventDefault();
+
+            // Validate form
+            const email = document.getElementById('email').value;
+            const name = document.getElementById('name').value;
+            const cardNumber = document.getElementById('cardNumber').value;
+            const cardExpiry = document.getElementById('cardExpiry').value;
+            const cardCvc = document.getElementById('cardCvc').value;
+            const country = document.getElementById('country').value;
+            const postal = document.getElementById('postal').value;
+
+            if (!email || !name || !cardNumber || !cardExpiry || !cardCvc || !country || !postal) {
+                alert('Please fill in all fields');
+                return;
+            }
+
+            // Basic card validation
+            const cardNumberClean = cardNumber.replace(/\s/g, '');
+            if (cardNumberClean.length < 15 || cardNumberClean.length > 16) {
+                alert('Please enter a valid card number');
+                return;
+            }
+
+            if (cardCvc.length < 3) {
+                alert('Please enter a valid CVC');
+                return;
+            }
+
+            // Show processing overlay
+            document.getElementById('processingOverlay').classList.add('active');
+            document.getElementById('stripePayBtn').disabled = true;
+
+            // Simulate payment processing
+            setTimeout(() => {
+                // Hide processing
+                document.getElementById('processingOverlay').classList.remove('active');
+                document.getElementById('stripePayBtn').disabled = false;
+
+                // Close stripe modal
+                document.getElementById('stripeModal').classList.remove('active');
+                document.getElementById('stripeForm').reset();
+
+                // Update user account based on purchase
+                if (window.currentPlan === 'credits') {
+                    userCredits += window.creditsAmount;
+                    updateCreditsDisplay();
+                    document.getElementById('successPlanName').textContent = window.currentPlanName;
+                    document.getElementById('successMessage').textContent = `${window.creditsAmount} search credits have been added to your account!`;
+                } else {
+                    // Upgrade to unlimited
+                    userCredits = 999; // Unlimited represented as 999
+                    document.getElementById('creditsDisplay').textContent = '🌲 Pro Plan: Unlimited Searches';
+                    document.getElementById('successPlanName').textContent = window.currentPlanName;
+                    document.getElementById('successMessage').textContent = 'You now have unlimited searches and access to all premium features!';
+                }
+
+                // Show success modal
+                document.getElementById('successModal').classList.add('active');
+
+                // Auto-close success modal after 5 seconds
+                setTimeout(() => {
+                    closeSuccessModal();
+                }, 5000);
+            }, 2500); // Simulate 2.5 second processing time
+        });
+
+        function closeSuccessModal() {
+            document.getElementById('successModal').classList.remove('active');
+        }
+
+        // Click outside success modal to close
+        document.getElementById('successModal').addEventListener('click', (e) => {
+            if (e.target.id === 'successModal') {
+                closeSuccessModal();
+            }
+        });
+
+        // Country filter functionality
+        const countrySelect = document.getElementById('countrySelect');
+        const woodCards = document.querySelectorAll('.wood-card[data-countries]');
+        
+        countrySelect.addEventListener('change', () => {
+            const selectedCountry = countrySelect.value;
+            
+            woodCards.forEach(card => {
+                if (selectedCountry === 'all') {
+                    card.style.display = 'block';
+                } else {
+                    const cardCountries = card.dataset.countries.split(',');
+                    card.style.display = cardCountries.includes(selectedCountry) ? 'block' : 'none';
+                }
+            });
+        });
+        // Tab switching
+        document.querySelectorAll('.tab-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const tabName = btn.dataset.tab;
+                
+                document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+                document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+                
+                btn.classList.add('active');
+                document.getElementById(tabName).classList.add('active');
+            });
+        });
+
+        // File upload handlers
+        function setupUpload(uploadAreaId, fileInputId, previewId, buttonId, resultsId) {
+            const uploadArea = document.getElementById(uploadAreaId);
+            const fileInput = document.getElementById(fileInputId);
+            const preview = document.getElementById(previewId);
+            const button = document.getElementById(buttonId);
+            const results = document.getElementById(resultsId);
+
+            uploadArea.addEventListener('click', () => fileInput.click());
+
+            uploadArea.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                uploadArea.classList.add('dragover');
+            });
+
+            uploadArea.addEventListener('dragleave', () => {
+                uploadArea.classList.remove('dragover');
+            });
+
+            uploadArea.addEventListener('drop', (e) => {
+                e.preventDefault();
+                uploadArea.classList.remove('dragover');
+                const file = e.dataTransfer.files[0];
+                if (file && file.type.startsWith('image/')) {
+                    handleFile(file);
+                }
+            });
+
+            fileInput.addEventListener('change', (e) => {
+                const file = e.target.files[0];
+                if (file) {
+                    handleFile(file);
+                }
+            });
+
+            function handleFile(file) {
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    preview.innerHTML = `<img src="${e.target.result}" class="preview-image" alt="Preview">`;
+                    button.style.display = 'inline-block';
+                };
+                reader.readAsDataURL(file);
+            }
+
+            button.addEventListener('click', () => {
+                // Check if user has credits
+                if (!checkCredits()) {
+                    return;
+                }
+                
+                button.textContent = 'Analyzing...';
+                button.disabled = true;
+                
+                setTimeout(() => {
+                    // Use a credit
+                    useCredit();
+                    
+                    results.style.display = 'block';
+                    results.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                    button.textContent = button.id.replace('Btn', '').replace(/([A-Z])/g, ' $1').trim();
+                    button.disabled = false;
+                    
+                    // Animate rating bars
+                    document.querySelectorAll('.rating-fill').forEach(fill => {
+                        const width = fill.style.width;
+                        fill.style.width = '0%';
+                        setTimeout(() => {
+                            fill.style.width = width;
+                        }, 100);
+                    });
+                }, 1500);
+            });
+        }
+
+        setupUpload('treeUpload', 'treeFile', 'treePreview', 'identifyTreeBtn', 'treeResults');
+        setupUpload('woodUpload', 'woodFile', 'woodPreview', 'identifyWoodBtn', 'woodResults');
+        setupUpload('burnUpload', 'burnFile', 'burnPreview', 'analyzeBurnBtn', 'burnResults');
+        setupUpload('moistureUpload', 'moistureFile', 'moisturePreview', 'checkMoistureBtn', 'moistureResults');
+
+        // Food Pairing System
+        const woodPairings = {
+            beef: [
+                { name: 'Hickory', strength: 'Strong', flavor: 'Bacon-like, robust', score: 95 },
+                { name: 'Oak', strength: 'Medium', flavor: 'Balanced, classic', score: 93 },
+                { name: 'Mesquite', strength: 'Very Strong', flavor: 'Intense, earthy', score: 88 },
+                { name: 'Pecan', strength: 'Medium', flavor: 'Sweet, nutty', score: 85 }
+            ],
+            pork: [
+                { name: 'Apple', strength: 'Mild', flavor: 'Sweet, fruity', score: 95 },
+                { name: 'Cherry', strength: 'Mild', flavor: 'Sweet, delicate', score: 93 },
+                { name: 'Hickory', strength: 'Strong', flavor: 'Traditional BBQ', score: 90 },
+                { name: 'Maple', strength: 'Mild', flavor: 'Sweet, subtle', score: 88 }
+            ],
+            chicken: [
+                { name: 'Apple', strength: 'Mild', flavor: 'Light, fruity', score: 96 },
+                { name: 'Cherry', strength: 'Mild', flavor: 'Delicate, sweet', score: 94 },
+                { name: 'Pecan', strength: 'Medium', flavor: 'Nutty, rich', score: 90 },
+                { name: 'Alder', strength: 'Light', flavor: 'Delicate, musky', score: 87 }
+            ],
+            fish: [
+                { name: 'Alder', strength: 'Light', flavor: 'Traditional salmon wood', score: 98 },
+                { name: 'Apple', strength: 'Mild', flavor: 'Sweet, delicate', score: 92 },
+                { name: 'Cedar', strength: 'Medium', flavor: 'Aromatic, distinctive', score: 90 },
+                { name: 'Maple', strength: 'Mild', flavor: 'Subtle, clean', score: 88 }
+            ],
+            lamb: [
+                { name: 'Oak', strength: 'Medium', flavor: 'Balanced', score: 92 },
+                { name: 'Hickory', strength: 'Strong', flavor: 'Robust', score: 90 },
+                { name: 'Cherry', strength: 'Mild', flavor: 'Fruity sweetness', score: 87 },
+                { name: 'Pecan', strength: 'Medium', flavor: 'Nutty complexity', score: 85 }
+            ],
+            vegetables: [
+                { name: 'Apple', strength: 'Mild', flavor: 'Sweet, light', score: 94 },
+                { name: 'Cherry', strength: 'Mild', flavor: 'Delicate, fruity', score: 92 },
+                { name: 'Maple', strength: 'Mild', flavor: 'Subtle sweetness', score: 90 },
+                { name: 'Alder', strength: 'Light', flavor: 'Very light smoke', score: 88 }
+            ]
+        };
+
+        function suggestWoodForMeat(meat) {
+            const meatNames = {
+                beef: 'Beef & Brisket',
+                pork: 'Pork & Ribs',
+                chicken: 'Poultry',
+                fish: 'Fish & Seafood',
+                lamb: 'Lamb & Game',
+                vegetables: 'Vegetables'
+            };
+
+            document.getElementById('selectedMeat').textContent = meatNames[meat];
+            document.getElementById('woodSuggestions').style.display = 'block';
+            document.getElementById('woodSuggestions').scrollIntoView({ behavior: 'smooth' });
+
+            const suggestions = woodPairings[meat];
+            const grid = document.getElementById('suggestionGrid');
+            
+            grid.innerHTML = suggestions.map(wood => `
+                <div class="wood-card">
+                    <h4>${wood.name}</h4>
+                    <div style="background: var(--leaf-green); color: white; padding: 0.5rem; margin: 1rem 0; border-radius: 4px;">
+                        <div style="font-size: 2rem; font-weight: 700;">${wood.score}/100</div>
+                        <div style="font-size: 0.85rem;">Pairing Score</div>
+                    </div>
+                    <p style="margin: 0.5rem 0;"><strong>Strength:</strong> ${wood.strength}</p>
+                    <p style="margin: 0.5rem 0;"><strong>Flavor:</strong> ${wood.flavor}</p>
+                </div>
+            `).join('');
+        }
+
+        // Wood mixing calculator
+        const primarySlider = document.getElementById('primaryPercent');
+        const primaryDisplay = document.getElementById('primaryPercentDisplay');
+        const secondaryDisplay = document.getElementById('secondaryPercentDisplay');
+        const blendResult = document.getElementById('blendResult');
+        const blendRecommendation = document.getElementById('blendRecommendation');
+
+        function updateBlend() {
+            const primary = parseInt(primarySlider.value);
+            const secondary = 100 - primary;
+            const primaryWood = document.getElementById('primaryWood').options[document.getElementById('primaryWood').selectedIndex].text;
+            const secondaryWood = document.getElementById('secondaryWood').options[document.getElementById('secondaryWood').selectedIndex].text;
+
+            primaryDisplay.textContent = primary + '%';
+            secondaryDisplay.textContent = secondary + '%';
+
+            blendResult.textContent = `${primary}% ${primaryWood} + ${secondary}% ${secondaryWood}`;
+
+            // Smart recommendations
+            const combos = {
+                'oak-apple': 'Pork ribs, chicken, mild beef',
+                'oak-cherry': 'Beef brisket, pork shoulder',
+                'hickory-apple': 'Pulled pork, ribs, ham',
+                'hickory-cherry': 'Beef ribs, pork chops',
+                'mesquite-apple': 'Tri-tip, chicken thighs',
+                'pecan-apple': 'Turkey, pork loin',
+                'pecan-cherry': 'Duck, lamb, pork'
+            };
+
+            const primaryKey = document.getElementById('primaryWood').value;
+            const secondaryKey = document.getElementById('secondaryWood').value;
+            const comboKey = `${primaryKey}-${secondaryKey}`;
+
+            blendRecommendation.textContent = combos[comboKey] || 'Experiment and discover!';
+        }
+
+        primarySlider.addEventListener('input', updateBlend);
+        document.getElementById('primaryWood').addEventListener('change', updateBlend);
+        document.getElementById('secondaryWood').addEventListener('change', updateBlend);
+        updateBlend();
+
+        // Seasoning calculator
+        function calculateSeasoning() {
+            const species = document.getElementById('seasoningSpecies').value;
+            const cutDate = new Date(document.getElementById('cutDate').value);
+            const storage = document.getElementById('storageConditions').value;
+
+            if (!cutDate || isNaN(cutDate.getTime())) {
+                alert('Please select when you cut/split the wood');
+                return;
+            }
+
+            // Seasoning times in months
+            const seasoningTimes = {
+                oak: { ideal: 18, good: 20, poor: 24 },
+                ash: { ideal: 9, good: 11, poor: 14 },
+                pine: { ideal: 7, good: 8, poor: 10 },
+                maple: { ideal: 9, good: 11, poor: 14 },
+                cherry: { ideal: 10, good: 12, poor: 15 }
+            };
+
+            const months = seasoningTimes[species][storage];
+            const readyDate = new Date(cutDate);
+            readyDate.setMonth(readyDate.getMonth() + months);
+
+            const today = new Date();
+            const daysUntilReady = Math.ceil((readyDate - today) / (1000 * 60 * 60 * 24));
+
+            document.getElementById('seasoningResult').style.display = 'block';
+            document.getElementById('readyDate').textContent = readyDate.toLocaleDateString('en-US', { 
+                year: 'numeric', 
+                month: 'long', 
+                day: 'numeric' 
+            });
+
+            if (daysUntilReady < 0) {
+                document.getElementById('daysRemaining').innerHTML = '<div style="color: var(--leaf-green); font-size: 1.2rem; font-weight: 600;">✓ Your wood is ready to burn!</div>';
+            } else if (daysUntilReady === 0) {
+                document.getElementById('daysRemaining').innerHTML = '<div style="color: var(--leaf-green); font-size: 1.2rem; font-weight: 600;">✓ Your wood is ready today!</div>';
+            } else {
+                document.getElementById('daysRemaining').innerHTML = `<div style="font-size: 1.1rem; color: var(--bark-medium);">${daysUntilReady} days remaining (${Math.ceil(daysUntilReady / 30)} months)</div>`;
+            }
+
+            document.getElementById('seasoningResult').scrollIntoView({ behavior: 'smooth' });
+        }
+
+        // Search functionality
+        const searchBox = document.getElementById('woodSearch');
+        searchBox.addEventListener('input', (e) => {
+            const searchTerm = e.target.value.toLowerCase();
+            document.querySelectorAll('.wood-card').forEach(card => {
+                const text = card.textContent.toLowerCase();
+                card.style.display = text.includes(searchTerm) ? 'block' : 'none';
+            });
+        });
+
+        // Add smooth scroll behavior
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }
+            });
+        });
+    </script>
+</body>
+</html>
