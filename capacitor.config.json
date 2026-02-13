@@ -1,5 +1,8 @@
 {
   "appId": "com.woodwise.app",
   "appName": "WoodWise",
-  "webDir": "."
+  "webDir": ".",
+  "server": {
+    "androidScheme": "https"
+  }
 }

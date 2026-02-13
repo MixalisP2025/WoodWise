@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">WoodWise</string>
+    <string name="title_activity_main">WoodWise</string>
+    <string name="package_name">com.woodwise.app</string>
+    <string name="custom_url_scheme">com.woodwise.app</string>
+</resources>
