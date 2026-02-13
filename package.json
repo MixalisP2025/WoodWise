@@ -1,0 +1,25 @@
+{
+  "name": "woodwise",
+  "version": "1.0.0",
+  "description": "![WoodWise Logo](https://img.shields.io/badge/WoodWise-Tree%20%26%20Wood%20ID-4a7c59) ![License](https://img.shields.io/badge/license-MIT-blue) ![Version](https://img.shields.io/badge/version-1.0.0-green)",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/MixalisP2025/WoodWise.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/MixalisP2025/WoodWise/issues"
+  },
+  "homepage": "https://github.com/MixalisP2025/WoodWise#readme",
+  "dependencies": {
+    "@capacitor/cli": "^8.1.0",
+    "@capacitor/core": "^8.1.0"
+  }
+}
